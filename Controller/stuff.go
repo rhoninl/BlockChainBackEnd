@@ -7,11 +7,7 @@ import (
 )
 
 func GetStuff(c *gin.Context) {
-	companyId, exists := c.Get("companyId")
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "未登录"})
-		return
-	}
+	companyId, _ := c.Get("companyId")
 	stuffs, err := Model.GetStuff(companyId.(string))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})

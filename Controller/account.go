@@ -43,3 +43,17 @@ func LogOut(c *gin.Context) {
 func Register(c *gin.Context) {
 	fmt.Println("this is Register Page!")
 }
+
+func Info(c *gin.Context) {
+	companyId, _ := c.Get("companyId")
+	info, exists, err := Model.Info(companyId.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器出错了"})
+		return
+	}
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "未找到相关信息"})
+		return
+	}
+	c.JSON(http.StatusOK, info)
+}

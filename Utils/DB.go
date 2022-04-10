@@ -29,7 +29,7 @@ func init() {
 	})
 	_, err = rdb.Ping().Result()
 	if err != nil {
-		log.Println("[Mysql]连接失败")
+		log.Println("[Redis]连接失败")
 		panic(err)
 	}
 	fmt.Println("[Redis]链接成功")
