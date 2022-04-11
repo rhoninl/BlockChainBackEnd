@@ -32,3 +32,18 @@ type CompanyBasicInfo struct {
 	CompanyName string `json:"companyName"`
 	CompanyType string `json:"companyType"`
 }
+
+type Order struct {
+	OrderId              string `json:"orderId"`
+	ClientCompanyName    string `json:"clientCompanyName"`
+	StartDate            string `json:"startDate"`
+	LandTransCompanyName string `json:"landTransCompanyName"`
+	SeaTransCompanyName  string `json:"seaTransCompanyName"`
+	Status               string `json:"status"`
+}
+
+type CompanyList struct {
+	CompanyId   string `json:"companyId"`
+	CompanyName string `json:"companyName"`
+	CompanyType string `json:"companyType"`
+}
