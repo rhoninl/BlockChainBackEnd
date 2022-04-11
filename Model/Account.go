@@ -83,3 +83,55 @@ func CompanyBasicInfo(companyId string) (Utils.CompanyBasicInfo, error) {
 	rows.Scan(&companyInfo.CompanyName, &companyInfo.CompanyType)
 	return companyInfo, nil
 }
+
+func RegisterInfo(info Utils.RegisterInfo) (bool, error) {
+	/*
+		Company
+		Account
+		Address
+		CompanyInfo
+	*/
+	addressId := ""
+	affair, err := Utils.DB().Begin()
+	if err != nil {
+		return false, err
+	}
+	//事务开始
+	template := `Insert Into ShippingTraceability.Account Set Account=?,PassWord =?,CompanyId=?`
+	info.CompanyId = GenerateId()
+	_, err = affair.Exec(template, info.Account.Account, info.Password, info.CompanyId)
+	if err != nil {
+		log.Println("[mysql]Account", err)
+		affair.Rollback()
+		return false, err
+	}
+	template = `Insert Into ShippingTraceability.Address Set AddressId=?,Country=?,City=?,Address=?,EnglishAddress=?`
+	addressId = GenerateId()
+	_, err1 := affair.Exec(template, addressId, info.Country, info.City, info.Address, info.EnglishAddress)
+	if err1 != nil {
+		log.Println("[mysql]Address", err)
+		affair.Rollback()
+		return false, err
+	}
+	template = `Insert Into ShippingTraceability.Company Set CompanyId = ?,CompanyName = ?,CompanyType =?`
+	_, err = affair.Exec(template, info.CompanyId, info.CompanyName, info.CompanyType)
+	if err != nil {
+		log.Println("[mysql]Company", err)
+		affair.Rollback()
+		return false, nil
+	}
+	template = `Insert Into ShippingTraceability.CompanyInfo Set CompanyId =?,Phone=?,AddressId=?,Email=?`
+	_, err = affair.Exec(template, info.CompanyId, info.Phone, addressId, info.Email)
+	if err != nil {
+		log.Println("[mysql]CompanyInfo", err)
+		affair.Rollback()
+		return false, nil
+	}
+	//事务结束
+	err = affair.Commit()
+	if err != nil {
+		affair.Rollback()
+		return false, err
+	}
+	return true, nil
+}

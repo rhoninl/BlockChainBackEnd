@@ -7,9 +7,9 @@ type Account struct {
 }
 
 type CompanyInfo struct {
-	CompanyId string `json:"companyId"`
-	Phone     string `json:"phone"`
-	Email     string `json:"email"`
+	//CompanyId string `json:"companyId"`
+	Phone string `json:"phone"`
+	Email string `json:"email"`
 	AddressInfo
 	CompanyBasicInfo
 }
@@ -46,4 +46,9 @@ type CompanyList struct {
 	CompanyId   string `json:"companyId"`
 	CompanyName string `json:"companyName"`
 	CompanyType string `json:"companyType"`
+}
+
+type RegisterInfo struct {
+	Account
+	CompanyInfo
 }

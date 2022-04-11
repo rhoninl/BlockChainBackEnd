@@ -41,7 +41,14 @@ func LogOut(c *gin.Context) {
 }
 
 func Register(c *gin.Context) {
-	fmt.Println("this is Register Page!")
+	var accountInfo Utils.RegisterInfo
+	c.BindJSON(&accountInfo)
+	ok, err := Model.RegisterInfo(accountInfo)
+	if err != nil || !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }
 
 func Info(c *gin.Context) {
