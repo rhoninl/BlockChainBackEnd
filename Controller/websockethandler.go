@@ -11,8 +11,9 @@ import (
 )
 
 type Client struct {
-	clients     map[int64]*websocket.Conn
-	clientGroup map[string]map[int64]struct{}
+	clients     map[int64]*websocket.Conn     //公司Id与链接的map
+	clientGroup map[string]map[int64]struct{} // 通过公司类型对链接进行分类保存
+	clientNum   int                           //记录当前用户总数，便于维护心跳检测
 }
 
 var myClient Client
@@ -22,10 +23,8 @@ func init() {
 	myClient = Client{
 		clients:     make(map[int64]*websocket.Conn),
 		clientGroup: make(map[string]map[int64]struct{}),
+		clientNum:   0,
 	}
-	myClient.clientGroup["货代"] = make(map[int64]struct{})
-	myClient.clientGroup["船代"] = make(map[int64]struct{})
-	myClient.clientGroup["货商"] = make(map[int64]struct{})
 
 	go func() {
 		for {
@@ -58,6 +57,7 @@ func (c *Client) Login(conn *websocket.Conn, id int64) {
 	c.clients[num] = conn
 	_, companyType := Model.GetCompanyBasicInfo(id)
 	c.clientGroup[companyType][id] = struct{}{}
+	c.clientNum++
 }
 
 func (c *Client) SendMessageToId(message interface{}, id int64) {
@@ -107,6 +107,7 @@ func (c *Client) UnRegister(id int64) {
 	c.clients[id].Close() // 关闭websocket
 	delete(c.clients, id) // 将信息从clients中删除
 	delete(c.clientGroup[companyType], id)
+	c.clientNum--
 }
 
 func UseClient() *Client {
