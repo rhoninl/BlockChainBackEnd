@@ -1,4 +1,4 @@
-package Model
+package Utils
 
 import (
 	"math/rand"

@@ -30,19 +30,21 @@ func Login(c *gin.Context) {
 	}
 	token := Utils.CreateToken(currentInfo.CompanyId)
 	c.SetCookie("token", token, Utils.MAXAGE, "/", "", false, true)
-	c.JSON(http.StatusOK, nil)
+	c.JSON(888, nil)
 }
 
 func LogOut(c *gin.Context) {
-	companyId, exists := c.Get("companyId")
-	if exists {
-		fmt.Println(companyId, "is LogOut")
-	}
+	companyId, _ := c.Get("companyId")
+	fmt.Println(companyId, "is LogOut")
 }
 
 func Register(c *gin.Context) {
 	var accountInfo Utils.RegisterInfo
 	c.BindJSON(&accountInfo)
+	if !Model.CheckAccountUnique(accountInfo.Account.Account) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "帐号以存在"})
+		return
+	}
 	ok, err := Model.RegisterInfo(accountInfo)
 	if err != nil || !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
@@ -53,7 +55,7 @@ func Register(c *gin.Context) {
 
 func Info(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
-	info, exists, err := Model.Info(companyId.(string))
+	info, exists, err := Model.Info(companyId.(int64))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器出错了"})
 		return

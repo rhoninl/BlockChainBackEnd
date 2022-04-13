@@ -9,15 +9,15 @@ import (
 
 const (
 	SECRETARY = "blockChain"
-	MAXAGE    = 60 * 60 * 24 // 1月
+	MAXAGE    = 60 * 60 * 24 // 1天
 )
 
 type CustomClaims struct {
-	CompanyId string
+	CompanyId int64
 	jwt.StandardClaims
 }
 
-func CreateToken(CompanyId string) string {
+func CreateToken(CompanyId int64) string {
 	c := &CustomClaims{
 		CompanyId: CompanyId,
 		StandardClaims: jwt.StandardClaims{

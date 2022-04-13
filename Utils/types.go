@@ -3,7 +3,7 @@ package Utils
 type Account struct {
 	Account   string `json:"account"`
 	Password  string `json:"password"`
-	CompanyId string `json:"companyId"`
+	CompanyId int64  `json:"companyId"`
 }
 
 type CompanyInfo struct {
@@ -22,19 +22,19 @@ type AddressInfo struct {
 }
 
 type Stuff struct {
-	StuffId   string `json:"stuffId"`
+	StuffId   int64  `json:"stuffId"`
 	StuffName string `json:"stuffName"`
 	StuffJob  string `json:"stuffJob"`
 }
 
 type CompanyBasicInfo struct {
-	CompanyId   string `json:"companyId"`
+	CompanyId   int64  `json:"companyId"`
 	CompanyName string `json:"companyName"`
 	CompanyType string `json:"companyType"`
 }
 
 type Order struct {
-	OrderId              string `json:"orderId"`
+	OrderId              int64  `json:"orderId"`
 	ClientCompanyName    string `json:"clientCompanyName"`
 	StartDate            string `json:"startDate"`
 	LandTransCompanyName string `json:"landTransCompanyName"`
@@ -43,7 +43,7 @@ type Order struct {
 }
 
 type CompanyList struct {
-	CompanyId   string `json:"companyId"`
+	CompanyId   int64  `json:"companyId"`
 	CompanyName string `json:"companyName"`
 	CompanyType string `json:"companyType"`
 }
@@ -51,4 +51,37 @@ type CompanyList struct {
 type RegisterInfo struct {
 	Account
 	CompanyInfo
+}
+
+type OrderInfo struct {
+	OrderId     int64  `json:"orderId"`
+	Phone       string `json:"phone"`
+	Email       string `json:"email"`
+	Fax         string `json:"fax"`
+	UnStackable bool   `json:"unStackable"`
+	Perishable  bool   `json:"perishable"`
+	Dangerous   bool   `json:"dangerous"`
+	Clearance   bool   `json:"clearance"`
+	Incoterms   string `json:"incoterms"`
+	Other       string `json:"other"`
+
+	SendAddress    AddressInfo `json:"sendAddress"`
+	ReceiveAddress AddressInfo `json:"receiveAddress"`
+
+	ClientCompanyId int64 `json:"clientCompanyId"`
+
+	Cargos []Cargo `json:"cargos"`
+
+	DeliveryDate  string `json:"deliveryDate"`
+	HopeReachDate string `json:"hopeReachDate"`
+}
+
+type Cargo struct {
+	CargoId     int64   `json:"cargoId"`
+	CargoName   string  `json:"cargoName"`
+	CargoModel  string  `json:"cargoModel"`
+	CargoSize   string  `json:"cargoSize"`
+	CargoNum    int64   `json:"cargoNum"`
+	CategoryId  int64   `json:"categoryId"`
+	CargoWeight float64 `json:"cargoWeight"`
 }

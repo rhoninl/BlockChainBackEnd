@@ -8,7 +8,7 @@ import (
 
 func GetJointVenture(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
-	companyList, err := Model.GetJointVenture(companyId.(string))
+	companyList, err := Model.GetJointVenture(companyId.(int64))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "数据库异常"})
 		return

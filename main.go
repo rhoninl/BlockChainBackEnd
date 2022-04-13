@@ -20,6 +20,7 @@ func main() {
 	stuff := router.Group("/stuff")
 	{
 		stuff.GET("/getStuff", MiddleWare.Auth(), Controller.GetStuff)
+		stuff.POST("/addStuff", MiddleWare.Auth(), Controller.AddStuff)
 	}
 	company := router.Group("/company")
 	{
@@ -28,6 +29,8 @@ func main() {
 	order := router.Group("/order")
 	{
 		order.GET("/getAllOrder", MiddleWare.Auth(), Controller.GetAllOrder)
+		order.POST("/submitOrder", MiddleWare.Auth(), Controller.BindForm)
 	}
+	router.GET("/ws", MiddleWare.Auth(), Controller.BuildSocket)
 	router.Run(":8080")
 }

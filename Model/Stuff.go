@@ -5,7 +5,7 @@ import (
 	"main/Utils"
 )
 
-func GetStuff(companyId string) ([]Utils.Stuff, error) {
+func GetStuff(companyId int64) ([]Utils.Stuff, error) {
 	template := `Select StaffId, StaffName, StaffJob From ShippingTraceability.Staff Where CompanyId = ?`
 	rows, err := Utils.DB().Query(template, companyId)
 	if err != nil {
@@ -20,4 +20,14 @@ func GetStuff(companyId string) ([]Utils.Stuff, error) {
 		stuffs = append(stuffs, stuff)
 	}
 	return stuffs, nil
+}
+
+func InsertStuff(stuff Utils.Stuff, companyId int64) (int64, error) {
+	template := `Insert Into ShippingTraceability.Staff Set StaffName = ?,StaffJob = ?,CompanyId = ?`
+	rows, err := Utils.DB().Exec(template, stuff.StuffName, stuff.StuffJob, companyId)
+	if err != nil {
+		return 0, err
+	}
+	line, _ := rows.LastInsertId()
+	return line, nil
 }
