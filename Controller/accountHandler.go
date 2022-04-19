@@ -30,7 +30,7 @@ func Login(c *gin.Context) {
 	}
 	token := Utils.CreateToken(currentInfo.CompanyId)
 	c.SetCookie("token", token, Utils.MAXAGE, "/", "", false, true)
-	c.JSON(888, nil)
+	c.JSON(http.StatusOK, nil)
 }
 
 func LogOut(c *gin.Context) {
