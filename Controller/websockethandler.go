@@ -6,6 +6,7 @@ import (
 	"log"
 	"main/Model"
 	"net/http"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -25,15 +26,7 @@ func init() {
 		clientGroup: make(map[string]map[int64]struct{}),
 		clientNum:   0,
 	}
-
-	go func() {
-		for {
-			select {
-			case <-time.Tick(time.Minute * 5):
-				myClient.HeartBeat()
-			}
-		}
-	}()
+	go myClient.HeartBeat()
 }
 
 func BuildSocket(c *gin.Context) {
@@ -56,6 +49,7 @@ func BuildSocket(c *gin.Context) {
 func (c *Client) Login(conn *websocket.Conn, id int64) {
 	c.clients[num] = conn
 	_, companyType := Model.GetCompanyBasicInfo(id)
+	log.Println(companyType, id)
 	c.clientGroup[companyType][id] = struct{}{}
 	c.clientNum++
 }
@@ -77,37 +71,52 @@ func (c *Client) SendMessageToGroup(message interface{}, group string) {
 }
 
 func (c *Client) HeartBeat() {
-	wg := sync.WaitGroup{}
 	ch := make(chan struct{}, 20) // 同时校验上限
-	for k, v := range c.clients {
-		wg.Add(1)
-		ch <- struct{}{} //写入信息到channel用于计数
-		go func(id int64, conn *websocket.Conn) {
-			ms := make(chan string, 1)         //用于接收数据协程与检测协程的同步
-			conn.WriteMessage(1, []byte("hb")) // 发送验证消息hb
-			go func() {                        // 创建协程接收信息
-				_, message, _ := conn.ReadMessage() //仅需接收到消息即可
-				ms <- string(message)               // 将消息写入channel可用于表明接收到消息，即链接联通
-			}()
-			select {
-			case <-time.After(time.Second * 10): //十秒超时断开链接
-				c.UnRegister(id) //超时断开连接
-			case <-ms: //接收到消息，没啥问题
+	wg := sync.WaitGroup{}
+	for {
+		select {
+		case <-time.After(time.Minute * 3):
+			for k, v := range c.clients {
+				wg.Add(1)
+				ch <- struct{}{} //写入信息到channel用于计数
+				go func(id int64, conn *websocket.Conn) {
+					ms := make(chan string, 1)         //用于接收数据协程与检测协程的同步
+					conn.WriteMessage(1, []byte("hb")) // 发送验证消息hb
+					go func() {                        // 创建协程接收信息
+						_, message, _ := conn.ReadMessage() //仅需接收到消息即可
+						select {
+						case ms <- string(message):
+							return // 将消息写入channel可用于表明接收到消息，即联通
+						case <-ms:
+							runtime.Goexit()
+						}
+					}()
+					select {
+					case <-time.After(time.Second * 10): //十秒超时断开链接
+						ms <- "TimeOut"  //超时给接受协程让其停止接受并结束协程
+						c.UnRegister(id) //超时断开连接
+					case <-ms: //接收到消息，没啥问题
+					}
+					close(ms)
+					<-ch      //协程结束，计数--
+					wg.Done() //协程结束
+				}(k, v)
 			}
-			<-ch      //协程结束，计数--
-			wg.Done() //协程结束
-		}(k, v)
+			wg.Wait() //等待所有协程结束
+		}
 	}
-	wg.Wait() //等待所有协程结束
+	close(ch)
 }
 
 func (c *Client) UnRegister(id int64) {
 	companyName, companyType := Model.GetCompanyBasicInfo(id) //仅需获取type即可
 	log.Println(companyName, " is Unconnected!")
-	c.clients[id].Close() // 关闭websocket
-	delete(c.clients, id) // 将信息从clients中删除
-	delete(c.clientGroup[companyType], id)
-	c.clientNum--
+	if _, e := c.clients[id]; e {
+		c.clients[id].Close() // 关闭websocket
+		delete(c.clients, id) // 将信息从clients中删除
+		delete(c.clientGroup[companyType], id)
+		c.clientNum--
+	}
 }
 
 func UseClient() *Client {

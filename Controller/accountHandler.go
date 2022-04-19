@@ -35,6 +35,8 @@ func Login(c *gin.Context) {
 
 func LogOut(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
+	c.SetCookie("token", "", -1, "/", "", false, true)
+	UseClient().UnRegister(companyId.(int64))
 	fmt.Println(companyId, "is LogOut")
 }
 
@@ -42,7 +44,7 @@ func Register(c *gin.Context) {
 	var accountInfo Utils.RegisterInfo
 	c.BindJSON(&accountInfo)
 	if !Model.CheckAccountUnique(accountInfo.Account.Account) {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "帐号以存在"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "帐号已存在"})
 		return
 	}
 	ok, err := Model.RegisterInfo(accountInfo)

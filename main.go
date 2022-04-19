@@ -30,6 +30,10 @@ const f = `
 func main() {
 	fmt.Println(f)
 	router := gin.Default()
+	homePage := router.Group("/homePage")
+	{
+		homePage.GET("/index", Controller.GetIndex)
+	}
 	account := router.Group("/account")
 	{
 		account.POST("/Login", Controller.Login)
