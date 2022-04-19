@@ -20,6 +20,8 @@ func GetAllOrder(c *gin.Context) {
 func BindForm(c *gin.Context) {
 	var orders Utils.OrderInfo
 	c.Bind(&orders)
+	companyId, _ := c.Get("companyId")
+	orders.ClientCompanyId = companyId.(int64)
 	id, ok, err := Model.RecordOrder(orders)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
