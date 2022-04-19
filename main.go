@@ -1,14 +1,35 @@
 package main
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"main/Controller"
 	"main/MiddleWare"
 )
 
-func main() {
-	router := gin.Default()
+const f = `
+                  _oo0oo_
+                 088888880
+                 88" . "88
+                 (| -_- |)
+                  0\ = /0
+               ___/'---'\___
+             .' \\\\| | \\\\'.
+            / \\\\|||:||| \\\ \
+           /_ ||||| -:- ||||| _\
+          |   | \\\\\-//////|   |  
+          | \_|  ''\---/''  |_/ |
+          \  .-\__  '-'  __/-.  /
+        ___'. .'  /--.--\  '. .'___
+     ."" '<  '.___\_<|>_/___.' >'  "".
+    | | : '-  \'.;'\ _ /';.'/ - ' : | |
+    \  \ '_.   \_ __\ /__ _/   ._' /  /
+====='-.____'.___ \_____/___.-'____.-'=====
+`
 
+func main() {
+	fmt.Println(f)
+	router := gin.Default()
 	account := router.Group("/account")
 	{
 		account.POST("/Login", Controller.Login)
