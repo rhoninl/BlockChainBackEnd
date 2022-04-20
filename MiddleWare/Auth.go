@@ -54,7 +54,7 @@ func Cors() gin.HandlerFunc {
 			c.Header("Access-Control-Allow-Origin", "*")
 		}
 		if method == "OPTIONS" {
-			c.JSON(http.StatusOK, "ok!")
+			c.AbortWithStatus(http.StatusNoContent)
 		}
 		defer func() {
 			if err := recover(); err != nil {
