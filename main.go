@@ -30,6 +30,7 @@ const f = `
 func main() {
 	fmt.Println(f)
 	router := gin.Default()
+	router.Use(MiddleWare.Cors())
 	homePage := router.Group("/homePage")
 	{
 		homePage.GET("/index", Controller.GetIndex)
