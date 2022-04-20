@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"main/Controller"
 	"main/MiddleWare"
@@ -30,7 +31,7 @@ const f = `
 func main() {
 	fmt.Println(f)
 	router := gin.Default()
-	router.Use(MiddleWare.Cors())
+	router.Use(cors.Default())
 	homePage := router.Group("/homePage")
 	{
 		homePage.GET("/index", Controller.GetIndex)
