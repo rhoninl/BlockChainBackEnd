@@ -85,3 +85,8 @@ type Cargo struct {
 	CategoryId  int64   `json:"categoryId"`
 	CargoWeight float64 `json:"cargoWeight"`
 }
+
+type AuthCode struct {
+	ToEmail string `json:"email"`
+	Code    string `json:"code"`
+}

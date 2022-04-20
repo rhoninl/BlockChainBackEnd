@@ -38,6 +38,7 @@ func main() {
 	}
 	account := router.Group("/account")
 	{
+		account.GET("/AuthCode", Controller.GetAuth)
 		account.POST("/Login", Controller.Login)
 		account.POST("/Register", Controller.Register)
 		account.POST("/LogOut", MiddleWare.Auth(), Controller.LogOut)

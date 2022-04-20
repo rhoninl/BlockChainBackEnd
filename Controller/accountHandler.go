@@ -69,3 +69,19 @@ func Info(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, info)
 }
+
+func GetAuth(c *gin.Context) {
+	var info Utils.AuthCode
+	info.ToEmail = c.Query("email")
+	if info.ToEmail == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱无效"})
+		return
+	}
+	fmt.Println(info)
+	info.Code = Utils.GenVerCode()
+	if err := Utils.SendCode(info); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
+		return
+	}
+	c.JSON(http.StatusOK, nil)
+}
