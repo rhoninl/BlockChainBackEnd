@@ -24,7 +24,8 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "帐号不存在"})
 		return
 	}
-	if currentInfo.Password != userInfo.Password {
+	userInfo.Password, err = Utils.ParsePassword(userInfo.Password)
+	if err != nil || currentInfo.Password != userInfo.Password {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "密码不正确"})
 		return
 	}
