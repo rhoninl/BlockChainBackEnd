@@ -93,12 +93,15 @@ func GetAuth(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已使用"})
 		return
 	}
+	fmt.Println(1)
 	info.Code = Utils.GenVerCode()
+	fmt.Println(2)
 	message := `<html><body><a>您的验证码为</a><h3>` + info.Code + `</h3><a><br/>验证码有效期为1小时，请在1小时内完成验证<br/>如果不是您本人操作，请忽略本条邮件</a></body></html>`
 	if err := Utils.SendMessage(message, info.ToEmail); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
+	fmt.Println(3)
 	Utils.AuthCodeRegister(info)
 	c.JSON(http.StatusOK, nil)
 }
