@@ -1,6 +1,7 @@
 package Model
 
 import (
+	"fmt"
 	"log"
 	"main/Utils"
 	"reflect"
@@ -125,7 +126,7 @@ func CheckEmailUnique(email string) bool {
 }
 
 func TryUpdateCompany(info Utils.CompanyBasicInfo) bool {
-	template := `Select CompanyName, CompanyType From ShippingTraceability.Company Where CompanyId = ? Limit 1`
+	template := `Select CompanyName, CompanyType From Company Where CompanyId = ? Limit 1`
 	rows, err := Utils.DB().Query(template, info.CompanyId)
 	if err != nil {
 		log.Println("[TryUpdateCompany]数据库异常", err)
@@ -137,7 +138,9 @@ func TryUpdateCompany(info Utils.CompanyBasicInfo) bool {
 	}
 	var oldInfo Utils.CompanyBasicInfo
 	rows.Scan(&oldInfo.CompanyName, &oldInfo.CompanyType)
-	if oldInfo.CompanyType == info.CompanyType && oldInfo.CompanyType == info.CompanyType {
+	oldInfo.CompanyId = info.CompanyId
+	fmt.Println(info, oldInfo)
+	if reflect.DeepEqual(oldInfo, info) {
 		return false
 	}
 	template = `Update Company Set CompanyName = ?,CompanyType = ? WHere CompanyId = ?`
@@ -164,6 +167,7 @@ func TryUpdateCompanyInfo(info Utils.CompanyInfo) bool {
 	var phone, email string
 	var addressId int64
 	rows.Scan(&phone, &addressId, &email)
+	fmt.Println(phone, addressId, email, info)
 	Utils.RDB().Set(string(info.CompanyId)+"#addressId", addressId, time.Minute)
 	if info.Email == email && info.Phone == phone {
 		return false
@@ -192,11 +196,13 @@ func TryUpdateAddress(info Utils.AddressInfo, id int64) bool {
 	}
 	var oldInfo Utils.AddressInfo
 	rows.Scan(&oldInfo.Country, &oldInfo.City, &oldInfo.Address)
+	fmt.Println(oldInfo, info)
 	if reflect.DeepEqual(oldInfo, info) {
+		fmt.Println(false)
 		return false
 	}
 	template = `Update Address Set Country = ?,City = ?,Address = ? Where AddressId = ?`
-	result, err := Utils.DB().Exec(template, info.Country, info.City, info.Address)
+	result, err := Utils.DB().Exec(template, info.Country, info.City, info.Address, addressId)
 	if err != nil {
 		return false
 	}

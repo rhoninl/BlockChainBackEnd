@@ -105,9 +105,10 @@ func EditInfo(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
 	var companyInfo Utils.CompanyInfo
 	c.Bind(&companyInfo)
+	companyInfo.CompanyId = companyId.(int64)
 	try1 := Model.TryUpdateCompany(companyInfo.CompanyBasicInfo)
 	try2 := Model.TryUpdateCompanyInfo(companyInfo)
-	try3 := Model.TryUpdateAddress(companyInfo.AddressInfo, companyId.(int64))
+	try3 := Model.TryUpdateAddress(companyInfo.AddressInfo, companyInfo.CompanyId)
 	if try1 || try2 || try3 {
 		c.JSON(http.StatusOK, gin.H{"message": "修改成功"})
 	}
