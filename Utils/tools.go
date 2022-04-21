@@ -70,8 +70,10 @@ func sendToMail(user, password, host, to, subject, body, mailType string) error 
 	sendTo := strings.Split(to, ";")
 	fmt.Println("send")
 	err := smtp.SendMail(host, auth, user, sendTo, msg)
-	fmt.Println(err)
-	return err
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func AuthCodeRegister(email AuthCode) error {
