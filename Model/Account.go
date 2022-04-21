@@ -43,7 +43,6 @@ func Info(companyId int64) (Utils.CompanyInfo, bool, error) {
 	info.Country = addressInfo.Country
 	info.City = addressInfo.City
 	info.Address = addressInfo.Address
-	info.EnglishAddress = addressInfo.EnglishAddress
 	//获取 基础信息
 	basicInfo, err := CompanyBasicInfo(companyId)
 	if err != nil {
@@ -58,7 +57,7 @@ func Info(companyId int64) (Utils.CompanyInfo, bool, error) {
 
 func QueryAddress(addressId int64) (Utils.AddressInfo, error) {
 	var addressInfo Utils.AddressInfo
-	template := `Select Country, City, Address, EnglishAddress From ShippingTraceability.Address Where AddressId = ? Limit 1`
+	template := `Select Country, City, Address From ShippingTraceability.Address Where AddressId = ? Limit 1`
 	rows, err := Utils.DB().Query(template, addressId)
 	if err != nil {
 		log.Println("[QueryAddress]数据库发生异常", err)
@@ -66,7 +65,7 @@ func QueryAddress(addressId int64) (Utils.AddressInfo, error) {
 	}
 	defer rows.Close()
 	rows.Next()
-	rows.Scan(&addressInfo.Country, &addressInfo.City, &addressInfo.Address, &addressInfo.EnglishAddress)
+	rows.Scan(&addressInfo.Country, &addressInfo.City, &addressInfo.Address)
 	return addressInfo, nil
 }
 
@@ -85,53 +84,36 @@ func CompanyBasicInfo(companyId int64) (Utils.CompanyBasicInfo, error) {
 }
 
 func RegisterInfo(info Utils.RegisterInfo) (bool, error) {
-	affair, err := Utils.DB().Begin()
+	template := `Insert Into Company Set CompanyName = ?,CompanyType = ?`
+	rows, err := Utils.DB().Exec(template, "未命名", info.CompanyType)
 	if err != nil {
 		return false, err
 	}
-	//事务开始
-	template := `Insert Into ShippingTraceability.Address Set Country=?,City=?,Address=?,EnglishAddress=?`
-	rows, err := affair.Exec(template, info.Country, info.City, info.Address, info.EnglishAddress)
+	companyId, err := rows.LastInsertId()
 	if err != nil {
-		log.Println("[mysql]Address", err)
-		affair.Rollback()
-		return false, nil
-	}
-	addressId, _ := rows.LastInsertId()
-	template = `Insert Into ShippingTraceability.Company Set CompanyName = ?,CompanyType =?`
-	rows, err = affair.Exec(template, info.CompanyName, info.CompanyType)
-	if err != nil {
-		log.Println("[mysql]Company", err)
-		affair.Rollback()
-		return false, nil
-	}
-	info.CompanyId, _ = rows.LastInsertId()
-	template = `Insert Into ShippingTraceability.Account Set Account=?,PassWord =?,CompanyId=?`
-	_, err = affair.Exec(template, info.Account.Account, info.Password, info.CompanyId)
-	if err != nil {
-		log.Println("[mysql]Account", err)
-		affair.Rollback()
-		return false, nil
-	}
-	template = `Insert Into ShippingTraceability.CompanyInfo Set CompanyId =?,Phone=?,AddressId=?,Email=?`
-	_, err = affair.Exec(template, info.CompanyId, info.Phone, addressId, info.Email)
-	if err != nil {
-		log.Println("[mysql]CompanyInfo", err)
-		affair.Rollback()
-		return false, nil
-	}
-	//事务结束
-	err = affair.Commit()
-	if err != nil {
-		affair.Rollback()
 		return false, err
 	}
+	template = `Insert Into CompanyInfo Set CompanyId = ?,Email = ?`
+	Utils.DB().Exec(template, companyId, info.ToEmail)
+	template = `Insert Into Account Set Account = ?,PassWord = ? ,CompanyId = ?`
+	Utils.DB().Exec(template, info.Account.Account, info.Account.Password, companyId)
 	return true, nil
 }
 
 func CheckAccountUnique(account string) bool {
 	template := `Select CompanyId From ShippingTraceability.Account Where Account = ? limit 1`
 	rows, err := Utils.DB().Query(template, account)
+	if err != nil {
+		log.Println("[CheckAccountUnique]数据库异常", err)
+		return false
+	}
+	defer rows.Close()
+	return !rows.Next()
+}
+
+func CheckEmailUnique(email string) bool {
+	template := `Select CompanyId From ShippingTraceability.CompanyInfo Where Email = ? limit 1`
+	rows, err := Utils.DB().Query(template, email)
 	if err != nil {
 		log.Println("[CheckAccountUnique]数据库异常", err)
 		return false

@@ -44,11 +44,23 @@ func LogOut(c *gin.Context) {
 func Register(c *gin.Context) {
 	var accountInfo Utils.RegisterInfo
 	c.BindJSON(&accountInfo)
+	if !Model.CheckEmailUnique(accountInfo.ToEmail) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已被使用"})
+		return
+	}
 	if !Model.CheckAccountUnique(accountInfo.Account.Account) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "帐号已存在"})
 		return
 	}
-	ok, err := Model.RegisterInfo(accountInfo)
+	ok, err := Utils.AuthCodeCheck(accountInfo.AuthCode)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
+		return
+	} else if !ok {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "验证码错误"})
+		return
+	}
+	ok, err = Model.RegisterInfo(accountInfo)
 	if err != nil || !ok {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
@@ -77,7 +89,10 @@ func GetAuth(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱无效"})
 		return
 	}
-	fmt.Println(info)
+	if !Model.CheckEmailUnique(info.ToEmail) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已使用"})
+		return
+	}
 	info.Code = Utils.GenVerCode()
 	if err := Utils.SendCode(info); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})

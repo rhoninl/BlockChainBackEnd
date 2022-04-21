@@ -15,10 +15,9 @@ type CompanyInfo struct {
 }
 
 type AddressInfo struct {
-	Country        string `json:"country"`
-	City           string `json:"city"`
-	Address        string `json:"address"`
-	EnglishAddress string `json:"englishAddress"`
+	Country string `json:"country"`
+	City    string `json:"city"`
+	Address string `json:"address"`
 }
 
 type Stuff struct {
@@ -49,8 +48,9 @@ type CompanyList struct {
 }
 
 type RegisterInfo struct {
+	AuthCode
 	Account
-	CompanyInfo
+	CompanyBasicInfo
 }
 
 type OrderInfo struct {
@@ -88,5 +88,5 @@ type Cargo struct {
 
 type AuthCode struct {
 	ToEmail string `json:"email"`
-	Code    string `json:"code"`
+	Code    string `json:"authCode"`
 }
