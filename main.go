@@ -44,6 +44,7 @@ func main() {
 		account.POST("/LogOut", MiddleWare.Auth(), Controller.LogOut)
 		account.GET("/Info", MiddleWare.Auth(), Controller.Info)
 		account.POST("/EditInfo", MiddleWare.Auth(), Controller.EditInfo)
+		account.POST("/Forget", Controller.ForgetPassword)
 	}
 
 	stuff := router.Group("/stuff")

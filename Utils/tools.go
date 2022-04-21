@@ -8,13 +8,12 @@ import (
 	"time"
 )
 
-func GenerateId() string {
+func GeneratePassWord() string {
 	rand.Seed(time.Now().Unix())
-	a := rand.Intn(9999)
-	b := rand.Intn(999)
+	a := rand.Intn(99999)
+	b := rand.Intn(9999)
 	result := string((a<<5^b)<<2%26+'A') + string((a<<8|b)>>1%26+'A')
-	result += `-` + FormatString(b, 3)
-	result += `-` + FormatString(a, 4)
+	result += FormatString(b, 4) + FormatString(a, 5)
 	return result
 }
 
@@ -42,7 +41,7 @@ func GenVerCode() string {
 	return result
 }
 
-func SendCode(message, email string) error {
+func SendMessage(message, email string) error {
 	user := `dmutreehole@163.com`
 	password := `DLCHYHPHXZVTIIGJ`
 	host := `smtp.163.com:25`
@@ -82,7 +81,7 @@ func AuthCodeCheck(email AuthCode) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if code == email.Code {
+	if strings.ToLower(code) == strings.ToLower(email.Code) {
 		RDB().Del(email.ToEmail + "#emailCode")
 		return true, nil
 	}

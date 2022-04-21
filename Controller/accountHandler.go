@@ -95,7 +95,7 @@ func GetAuth(c *gin.Context) {
 	}
 	info.Code = Utils.GenVerCode()
 	message := `<html><body><a>您的验证码为</a><h3>` + info.Code + `</h3><a><br/>验证码有效期为1小时，请在1小时内完成验证<br/>如果不是您本人操作，请忽略本条邮件</a></body></html>`
-	if err := Utils.SendCode(message, info.ToEmail); err != nil {
+	if err := Utils.SendMessage(message, info.ToEmail); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
@@ -119,5 +119,18 @@ func EditInfo(c *gin.Context) {
 }
 
 func ForgetPassword(c *gin.Context) {
-
+	var form Utils.ForgetPasswordForm
+	c.Bind(&form)
+	if !Model.CheckEmail(form.Account, form.Email) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "帐号或者邮箱错误"})
+		return
+	}
+	newPassword := Utils.GeneratePassWord()
+	if !Model.ChangePassword(form.Account, newPassword) {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
+		return
+	}
+	message := `<html><body>您的新密码为<h3>` + newPassword + `</h3><br/>登陆后请及时修改<br/></body></html>`
+	Utils.SendMessage(message, form.Email)
+	c.JSON(http.StatusOK, nil)
 }

@@ -90,3 +90,8 @@ type AuthCode struct {
 	ToEmail string `json:"email"`
 	Code    string `json:"authCode"`
 }
+
+type ForgetPasswordForm struct {
+	Account string `json:"account"`
+	Email   string `json:"email"`
+}

@@ -220,3 +220,40 @@ func TryUpdateAddress(info Utils.AddressInfo, id int64) bool {
 	num, _ := result.RowsAffected()
 	return num == 1
 }
+
+func CheckEmail(account, email string) bool {
+	template := `Select CompanyId From Account Where Account = ?`
+	rows, err := Utils.DB().Query(template, account)
+	if err != nil {
+		log.Println("[CheckEmail]出错了")
+		return false
+	}
+	if !rows.Next() {
+		return false
+	}
+	var companyId string
+	rows.Scan(&companyId)
+	template = `Select Email From CompanyInfo Where CompanyId = ?`
+	rows, err = Utils.DB().Query(template, companyId)
+	if err != nil {
+		log.Println("[CheckEmail]出错了")
+		return false
+	}
+	if !rows.Next() {
+		return false
+	}
+	var oldEmail string
+	rows.Scan(&oldEmail)
+	return oldEmail == email
+}
+
+func ChangePassword(account, password string) bool {
+	template := `Update Account Set PassWord = ? Where Account = ?`
+	result, err := Utils.DB().Exec(template, password, account)
+	if err != nil {
+		log.Println("[ChangePassword]出错了")
+		return false
+	}
+	num, _ := result.RowsAffected()
+	return num == 1
+}
