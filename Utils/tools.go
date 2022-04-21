@@ -68,7 +68,7 @@ func sendToMail(user, password, host, to, subject, body, mailType string) error 
 	}
 	msg := []byte("To: " + to + "\r\nFrom: " + user + ">\r\nSubject: " + subject + "\r\n" + contentType + "\r\n\r\n" + body)
 	sendTo := strings.Split(to, ";")
-	fmt.Println("send")
+	fmt.Println(host, auth, user, sendTo, msg)
 	err := smtp.SendMail(host, auth, user, sendTo, msg)
 	if err != nil {
 		return err
