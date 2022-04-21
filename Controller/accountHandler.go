@@ -44,6 +44,12 @@ func LogOut(c *gin.Context) {
 func Register(c *gin.Context) {
 	var accountInfo Utils.RegisterInfo
 	c.BindJSON(&accountInfo)
+	password, err := Utils.ParsePassword(accountInfo.Password)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "密码错误"})
+		return
+	}
+	accountInfo.Password = password
 	if !Model.CheckEmailUnique(accountInfo.ToEmail) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已被使用"})
 		return
