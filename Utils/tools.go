@@ -1,10 +1,8 @@
 package Utils
 
 import (
-	"github.com/emersion/go-sasl"
-	"github.com/emersion/go-smtp"
-	"log"
 	"math/rand"
+	"net/smtp"
 	"strconv"
 	"strings"
 	"time"
@@ -49,20 +47,28 @@ func SendMessage(message, email string) error {
 	host := `smtp.163.com:25`
 	to := email
 	subject := `ChainBlock`
-	auth := sasl.NewPlainClient("", user, password)
-
-	// Connect to the server, authenticate, set the sender and recipient,
-	// and send the email all in one step.
-	msg := strings.NewReader("To: " + to + "\r\n" +
-		"Subject:" + subject + "\r\n" +
-		"\r\n" + message +
-		".\r\n")
-	err := smtp.SendMail(host, auth, user, []string{to}, msg)
+	body := message
+	err := sendToMail(user, password, host, to, subject, body, "html")
 	if err != nil {
-		log.Fatal(err)
 		return err
 	}
 	return nil
+}
+
+//SendToMail 发送邮件的函数
+func sendToMail(user, password, host, to, subject, body, mailType string) error {
+	hp := strings.Split(host, ":")
+	auth := smtp.PlainAuth("", user, password, hp[0])
+	var contentType string
+	if mailType == "html" {
+		contentType = "Content-Type: text/" + mailType + "; charset=UTF-8"
+	} else {
+		contentType = "Content-Type: text/plain" + "; charset=UTF-8"
+	}
+	msg := []byte("To: " + to + "\r\nFrom: " + user + ">\r\nSubject: " + subject + "\r\n" + contentType + "\r\n\r\n" + body)
+	sendTo := strings.Split(to, ";")
+	err := smtp.SendMail(host, auth, user, sendTo, msg)
+	return err
 }
 
 func AuthCodeRegister(email AuthCode) error {
