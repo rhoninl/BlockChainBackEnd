@@ -1,6 +1,7 @@
 package Utils
 
 import (
+	"fmt"
 	"math/rand"
 	"net/smtp"
 	"strconv"
@@ -67,7 +68,9 @@ func sendToMail(user, password, host, to, subject, body, mailType string) error 
 	}
 	msg := []byte("To: " + to + "\r\nFrom: " + user + ">\r\nSubject: " + subject + "\r\n" + contentType + "\r\n\r\n" + body)
 	sendTo := strings.Split(to, ";")
+	fmt.Println("send")
 	err := smtp.SendMail(host, auth, user, sendTo, msg)
+	fmt.Println(err)
 	return err
 }
 
