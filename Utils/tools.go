@@ -82,5 +82,9 @@ func AuthCodeCheck(email AuthCode) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return code == email.Code, nil
+	if code == email.Code {
+		RDB().Del(email.ToEmail + "#emailCode")
+		return true, nil
+	}
+	return false, nil
 }

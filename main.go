@@ -43,6 +43,7 @@ func main() {
 		account.POST("/Register", Controller.Register)
 		account.POST("/LogOut", MiddleWare.Auth(), Controller.LogOut)
 		account.GET("/Info", MiddleWare.Auth(), Controller.Info)
+		account.POST("/EditInfo", MiddleWare.Auth(), Controller.EditInfo)
 	}
 
 	stuff := router.Group("/stuff")

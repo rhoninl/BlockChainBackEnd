@@ -3,6 +3,8 @@ package Model
 import (
 	"log"
 	"main/Utils"
+	"reflect"
+	"time"
 )
 
 func Login(account Utils.Account) (Utils.Account, bool, error) {
@@ -120,4 +122,84 @@ func CheckEmailUnique(email string) bool {
 	}
 	defer rows.Close()
 	return !rows.Next()
+}
+
+func TryUpdateCompany(info Utils.CompanyBasicInfo) bool {
+	template := `Select CompanyName, CompanyType From ShippingTraceability.Company Where CompanyId = ? Limit 1`
+	rows, err := Utils.DB().Query(template, info.CompanyId)
+	if err != nil {
+		log.Println("[TryUpdateCompany]数据库异常", err)
+		return false
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return false
+	}
+	var oldInfo Utils.CompanyBasicInfo
+	rows.Scan(&oldInfo.CompanyName, &oldInfo.CompanyType)
+	if oldInfo.CompanyType == info.CompanyType && oldInfo.CompanyType == info.CompanyType {
+		return false
+	}
+	template = `Update Company Set CompanyName = ?,CompanyType = ? WHere CompanyId = ?`
+	result, err := Utils.DB().Exec(template, info.CompanyName, info.CompanyType, info.CompanyId)
+	if err != nil {
+		log.Println("[TryUpdateCompany]数据库异常", err)
+		return false
+	}
+	num, _ := result.RowsAffected()
+	return num == 1
+}
+
+func TryUpdateCompanyInfo(info Utils.CompanyInfo) bool {
+	template := `Select Phone, AddressId, Email From CompanyInfo Where CompanyId = ?`
+	rows, err := Utils.DB().Query(template, info.CompanyId)
+	if err != nil {
+		log.Println("[TryUpdateCompany]数据库异常", err)
+		return false
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return false
+	}
+	var phone, email string
+	var addressId int64
+	rows.Scan(&phone, &addressId, &email)
+	Utils.RDB().Set(string(info.CompanyId)+"#addressId", addressId, time.Minute)
+	if info.Email == email && info.Phone == phone {
+		return false
+	}
+	template = `Update CompanyInfo Set Phone = ?,Email = ? Where CompanyId = ?`
+	result, err := Utils.DB().Exec(template, info.Phone, info.Email, info.CompanyId)
+	if err != nil {
+		log.Println("[TryUpdateCompany]数据库异常", err)
+		return false
+	}
+	num, _ := result.RowsAffected()
+	return num == 1
+}
+
+func TryUpdateAddress(info Utils.AddressInfo, id int64) bool {
+	addressId, _ := Utils.RDB().Get(string(id) + "#addressId").Result()
+	template := `Select Country, City, Address From Address Where AddressId = ?`
+	rows, err := Utils.DB().Query(template, addressId)
+	if err != nil {
+		log.Println("[TryUpdateAddress]数据库异常", err)
+		return false
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return false
+	}
+	var oldInfo Utils.AddressInfo
+	rows.Scan(&oldInfo.Country, &oldInfo.City, &oldInfo.Address)
+	if reflect.DeepEqual(oldInfo, info) {
+		return false
+	}
+	template = `Update Address Set Country = ?,City = ?,Address = ? Where AddressId = ?`
+	result, err := Utils.DB().Exec(template, info.Country, info.City, info.Address)
+	if err != nil {
+		return false
+	}
+	num, _ := result.RowsAffected()
+	return num == 1
 }
