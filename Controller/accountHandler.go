@@ -111,6 +111,7 @@ func EditInfo(c *gin.Context) {
 	try3 := Model.TryUpdateAddress(companyInfo.AddressInfo, companyInfo.CompanyId)
 	if try1 || try2 || try3 {
 		c.JSON(http.StatusOK, gin.H{"message": "修改成功"})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "未做出修改"})
 }

@@ -184,6 +184,18 @@ func TryUpdateCompanyInfo(info Utils.CompanyInfo) bool {
 
 func TryUpdateAddress(info Utils.AddressInfo, id int64) bool {
 	addressId, _ := Utils.RDB().Get(string(id) + "#addressId").Result()
+	if addressId == "1" {
+		template := `Insert Into Address Set Country=?,City=?,Address=?`
+		result, err := Utils.DB().Exec(template, info.Country, info.City, info.Address)
+		if err != nil {
+			return false
+		}
+		aId, _ := result.LastInsertId()
+		template = `Update CompanyInfo Set AddressId = ? Where CompanyId = ?`
+		rows, err := Utils.DB().Exec(template, aId, id)
+		num, _ := rows.RowsAffected()
+		return num == 1
+	}
 	template := `Select Country, City, Address From Address Where AddressId = ?`
 	rows, err := Utils.DB().Query(template, addressId)
 	if err != nil {
