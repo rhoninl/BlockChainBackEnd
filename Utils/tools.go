@@ -42,18 +42,18 @@ func GenVerCode() string {
 	return result
 }
 
-func SendCode(info AuthCode) error {
+func SendCode(message, email string) error {
 	user := `dmutreehole@163.com`
 	password := `DLCHYHPHXZVTIIGJ`
 	host := `smtp.163.com:25`
-	to := info.ToEmail
+	to := email
 	subject := `ChainBlock`
-	body := `<html><body><a>您的验证码为</a><h3>` + info.Code + `</h3><a><br/>验证码有效期为1小时，请在1小时内完成验证<br/>如果不是您本人操作，请忽略本条邮件</a></body></html>`
+	body := message
 	err := sendToMail(user, password, host, to, subject, body, "html")
 	if err != nil {
 		return err
 	}
-	return AuthCodeRegister(info)
+	return nil
 }
 
 //SendToMail 发送邮件的函数

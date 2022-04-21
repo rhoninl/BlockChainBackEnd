@@ -55,7 +55,6 @@ func Info(companyId int64) (Utils.CompanyInfo, bool, error) {
 	info.CompanyType = basicInfo.CompanyType
 	info.CompanyId = companyId
 	return info, true, nil
-
 }
 
 func QueryAddress(addressId int64) (Utils.AddressInfo, error) {
@@ -88,7 +87,7 @@ func CompanyBasicInfo(companyId int64) (Utils.CompanyBasicInfo, error) {
 
 func RegisterInfo(info Utils.RegisterInfo) (bool, error) {
 	template := `Insert Into Company Set CompanyName = ?,CompanyType = ?`
-	rows, err := Utils.DB().Exec(template, "未命名", info.CompanyType)
+	rows, err := Utils.DB().Exec(template, "未命名", "未选择")
 	if err != nil {
 		return false, err
 	}

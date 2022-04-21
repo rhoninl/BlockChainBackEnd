@@ -1,10 +1,10 @@
+
 CREATE TABLE Address
 (
     AddressId      int auto_increment primary key,
     Country        varchar(50)  NOT NULL,
     City           varchar(50)  NOT NULL,
-    Address        varchar(255) NOT NULL,
-    EnglishAddress varchar(255) NULL
+    Address        varchar(255) NOT NULL
 )charset = utf8mb4;
 
 CREATE TABLE Box
@@ -37,7 +37,7 @@ CREATE TABLE Categories
 CREATE TABLE Company
 (
     CompanyId   int auto_increment,
-    CompanyName varchar(50) NOT NULL,
+    CompanyName varchar(50) NOT NULL default '未命名',
     CompanyType varchar(30) NOT NULL,
     PRIMARY KEY (CompanyId)
 )charset = utf8mb4,engine = MyISAM;
@@ -68,10 +68,11 @@ Create Table Orders
     OrderId                int auto_increment primary key,
     ClientCompanyId        int NOT NULL,
     StartDate              datetime,
-    LandTransportCompanyId int,
-    SeaTransportCompanyId  int,
+    LandTransportCompanyId int Not Null default 0,
+    SeaTransportCompanyId  int Not Null default 0,
     OrderStatus            varchar(30) Not Null
-)charset=utf8mb4;
+)charset = utf8mb4;
+
 
 CREATE TABLE Order_Cargo
 (
@@ -174,9 +175,9 @@ CREATE TABLE Bargain
 CREATE TABLE CompanyInfo
 (
     CompanyId int NOT NULL,
-    Phone     varchar(30) NULL,
-    AddressId int NULL,
-    Email     varchar(30) NULL,
+    Phone     varchar(30) not NULL default '-1',
+    AddressId int not NULL default 1,
+    Email     varchar(30) not NULL,
     PRIMARY KEY (CompanyId)
 )charset = utf8mb4,engine = MyISAM;
 
@@ -195,20 +196,8 @@ CREATE TABLE Account
     PRIMARY KEY (CompanyId)
 )charset = utf8mb4,engine = MyISAM;
 
-
-Insert Into Staff Set StaffName = '张三',StaffJob='鸭子',CompanyId = 1;
-Insert Into Staff Set StaffName = '李四',StaffJob='鸡',CompanyId = 1;
-Insert Into Staff Set StaffName = '王五',StaffJob='鸭子',CompanyId = 1;
-Insert Into Staff Set StaffName = '张三22',StaffJob='鸭子',CompanyId = 2;
-Insert Into Staff Set StaffName = '李四22',StaffJob='鸡',CompanyId = 2;
-Insert Into Staff Set StaffName = '王五22',StaffJob='鸭子',CompanyId = 2;
-
-Insert Into Orders Set ClientCompanyId = 2,StartDate = now(),LandTransportCompanyId = 5,SeaTransportCompanyId = 1,OrderStatus = '订舱';
-Insert Into Orders Set ClientCompanyId = 2,StartDate = now(),LandTransportCompanyId = 3,SeaTransportCompanyId = 1,OrderStatus = '订舱';
-Insert Into Orders Set ClientCompanyId = 2,StartDate = now(),LandTransportCompanyId = 3,SeaTransportCompanyId = 1,OrderStatus = '订舱';
-
-Insert Into Relation SET CompanyId = 1,TargetCompanyId = 2;
-Insert Into Relation SET CompanyId = 3 , TargetCompanyId = 2;
-Insert Into Relation SET CompanyId = 2 , TargetCompanyId = 5;
-
-show engines;
+Insert Into Address Set AddressId = 0,Country = '空',City = '空',Address='空';
+Insert Into Address Set Country = 'China',City = 'Dalian',Address = 'Dalian HaiShi DaiXue';
+Insert Into Company Set CompanyName = 'Manager',CompanyType='管理员';
+Insert Into Account Set Account = 'admin',PassWord = 'admin',CompanyId = 1;
+Insert Into CompanyInfo Set CompanyId = 1,Phone = '1008611',AddressId = 2,Email = 'admin@qq.com';

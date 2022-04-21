@@ -94,10 +94,12 @@ func GetAuth(c *gin.Context) {
 		return
 	}
 	info.Code = Utils.GenVerCode()
-	if err := Utils.SendCode(info); err != nil {
+	message := `<html><body><a>您的验证码为</a><h3>` + info.Code + `</h3><a><br/>验证码有效期为1小时，请在1小时内完成验证<br/>如果不是您本人操作，请忽略本条邮件</a></body></html>`
+	if err := Utils.SendCode(message, info.ToEmail); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
+	Utils.AuthCodeRegister(info)
 	c.JSON(http.StatusOK, nil)
 }
 
@@ -114,4 +116,8 @@ func EditInfo(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"message": "未做出修改"})
+}
+
+func ForgetPassword(c *gin.Context) {
+
 }
