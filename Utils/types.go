@@ -1,7 +1,5 @@
 package Utils
 
-import "time"
-
 type Account struct {
 	Account   string `json:"account"`
 	Password  string `json:"password"`
@@ -99,17 +97,13 @@ type ForgetPasswordForm struct {
 }
 
 type Message struct {
-	MessageId   int64     `json:"messageId"`
-	MessageType int       `json:"messageType"`
-	FromName    string    `json:"form"`
-	Content     string    `json:"content"`
-	SendTime    time.Time `json:"sendTime"`
+	Context string `json:"context"`
 }
 
 type MessageList struct {
 	MessageId   int64  `json:"messageId"`
 	CompanyName string `json:"companyName"`
-	CompanyType string `json:"companyType"`
+	MessageType string `json:"companyType"`
 	SendTime    string `json:"sendTime"`
 	IsRead      int    `json:"isRead"`
 }

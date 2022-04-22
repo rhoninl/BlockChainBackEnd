@@ -65,6 +65,7 @@ func main() {
 	message := router.Group("/message")
 	{
 		message.GET("/getAllMessage", MiddleWare.Auth(), Controller.GetAllMessage)
+		message.GET("/getMessageInfo/:id", MiddleWare.Auth(), Controller.GetMessageInfo)
 	}
 	router.GET("/ws", MiddleWare.Auth(), Controller.BuildSocket)
 	router.Run(":8080")

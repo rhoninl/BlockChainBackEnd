@@ -1,6 +1,7 @@
 package Model
 
 import (
+	"errors"
 	"log"
 	"main/Utils"
 	"sync"
@@ -38,9 +39,42 @@ func GetAllMessage(CompanyId int64) ([]Utils.MessageList, error) {
 	wg := sync.WaitGroup{}
 	for rows.Next() {
 		wg.Add(1)
-		rows.Scan(&message.MessageId, &message.CompanyType, &companyId, &message.IsRead, &message.SendTime)
+		rows.Scan(&message.MessageId, &message.MessageType, &companyId, &message.IsRead, &message.SendTime)
 		message.CompanyName, _ = GetCompanyBasicInfo(companyId)
 		messageList = append(messageList, message)
 	}
 	return messageList, nil
+}
+
+func GetMessageInfo(MessageId int64) (Utils.Message, error) {
+	var message Utils.Message
+	template := `Select MessageContent From MessageInfo Where MessageId = ? Limit 1`
+	rows, err := Utils.DB().Query(template, MessageId)
+	if err != nil {
+		return message, err
+	}
+	defer rows.Close()
+	if !rows.Next() {
+		return message, errors.New("404")
+	}
+	rows.Scan(&message.Context)
+	go func(messageId int64) {
+		template1 := `Update MessageQueue Set isRead = 1 Where MessageId = ?`
+		Utils.DB().Exec(template1, MessageId)
+	}(MessageId)
+	return message, nil
+}
+
+func CheckMessageAuth(MessageId, CompanyId int64) bool {
+	template := `Select ToId From MessageQueue Where MessageId = ?`
+	rows, err := Utils.DB().Query(template, MessageId)
+	if err != nil {
+		return false
+	}
+	if !rows.Next() {
+		return false
+	}
+	var cid int64
+	rows.Scan(&cid)
+	return cid == CompanyId
 }
