@@ -55,11 +55,16 @@ func main() {
 	company := router.Group("/company")
 	{
 		company.GET("/getJointVenture", MiddleWare.Auth(), Controller.GetJointVenture)
+		company.POST("/makeFriends", MiddleWare.Auth(), Controller.MakeFriend)
 	}
 	order := router.Group("/order")
 	{
 		order.GET("/getAllOrder", MiddleWare.Auth(), Controller.GetAllOrder)
 		order.POST("/submitOrder", MiddleWare.Auth(), Controller.BindForm)
+	}
+	message := router.Group("/message")
+	{
+		message.GET("/getAllMessage", MiddleWare.Auth(), Controller.GetAllMessage)
 	}
 	router.GET("/ws", MiddleWare.Auth(), Controller.BuildSocket)
 	router.Run(":8080")

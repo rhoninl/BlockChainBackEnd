@@ -37,7 +37,7 @@ func Login(c *gin.Context) {
 func LogOut(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
 	c.SetCookie("token", "", -1, "/", "", false, true)
-	UseClient().UnRegister(companyId.(int64))
+	go Model.UseClient().UnRegister(companyId.(int64))
 	fmt.Println(companyId, "is LogOut")
 }
 
@@ -49,6 +49,7 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "密码错误"})
 		return
 	}
+	fmt.Println(password, accountInfo)
 	accountInfo.Password = password
 	if !Model.CheckEmailUnique(accountInfo.ToEmail) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已被使用"})
@@ -100,7 +101,7 @@ func GetAuth(c *gin.Context) {
 		return
 	}
 	info.Code = Utils.GenVerCode()
-	message := `<html><body><a>您的验证码为</a><h3>` + info.Code + `</h3><a><br/>验证码有效期为1小时，请在1小时内完成验证<br/>如果不是您本人操作，请忽略本条邮件</a></body></html>`
+	message := `<html><body style:"background:'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fbkimg.cdn.bcebos.com%2Fpic%2Fb3fb43166d224f4a20a4652df4a687529822720e7bc9&refer=http%3A%2F%2Fbkimg.cdn.bcebos.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1653183161&t=51bbd5bef8fe26d143d2fd2a4a73abf3'"><a>您的验证码为</a><h3>` + info.Code + `</h3><a><br/>验证码有效期为1小时，请在1小时内完成验证<br/>如果不是您本人操作，请忽略本条邮件</a></body></html>`
 	if err := Utils.SendMessage(message, info.ToEmail); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
