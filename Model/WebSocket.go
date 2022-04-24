@@ -2,6 +2,7 @@ package Model
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
 	"runtime"
@@ -23,7 +24,7 @@ func init() {
 		clientGroup: make(map[string]map[int64]struct{}),
 		clientNum:   0,
 	}
-	myClient.clientGroup["管理员"] = make(map[int64]struct{})
+	myClient.clientGroup["未选择"] = make(map[int64]struct{})
 	myClient.clientGroup["船代"] = make(map[int64]struct{})
 	myClient.clientGroup["货代"] = make(map[int64]struct{})
 	myClient.clientGroup["陆运公司"] = make(map[int64]struct{})
@@ -34,9 +35,10 @@ func init() {
 func (c *Client) Login(conn *websocket.Conn, id int64) {
 	c.clients[id] = conn
 	_, companyType := GetCompanyBasicInfo(id)
-	log.Println(companyType, id)
 	c.clientGroup[companyType][id] = struct{}{}
 	c.clientNum++
+	num, _ := GetUnReadNum(id)
+	c.SendMessageToId(gin.H{"num": num}, id)
 }
 
 func (c *Client) SendMessageToId(message interface{}, id int64) {

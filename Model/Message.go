@@ -89,3 +89,17 @@ func DeleteMessage(MessageId int64) bool {
 	num, _ := rows.RowsAffected()
 	return num == 1
 }
+
+func GetUnReadNum(CompanyId int64) (int64, error) {
+	template := `Select Count(*) From MessageQueue Where ToId = ? And isRead = 0 Group By ToId Limit 1`
+	rows, err := Utils.DB().Query(template, CompanyId)
+	if err != nil {
+		log.Println("[GetUnReadNum]Make a mistake", err)
+		return 0, err
+	}
+	defer rows.Close()
+	rows.Next()
+	var num int64
+	rows.Scan(&num)
+	return num, nil
+}
