@@ -69,7 +69,7 @@ func (c *Client) HeartBeat() {
 				ch <- struct{}{} //写入信息到channel用于计数
 				go func(id int64, conn *websocket.Conn) {
 					ms := make(chan string, 1)         //用于接收数据协程与检测协程的同步
-					conn.WriteMessage(1, []byte("hb")) // 发送验证消息hb
+					conn.WriteMessage(9, []byte("hb")) // 发送验证消息hb
 					go func() {                        // 创建协程接收信息
 						_, message, _ := conn.ReadMessage() //仅需接收到消息即可
 						select {

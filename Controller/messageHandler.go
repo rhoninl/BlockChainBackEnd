@@ -7,9 +7,15 @@ import (
 	"strconv"
 )
 
-func GetAllMessage(c *gin.Context) {
+func GetMessage(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
-	message, err := Model.GetAllMessage(companyId.(int64))
+	messageId := c.Query("messageId")
+	mid, err := strconv.ParseInt(messageId, 10, 64)
+	if messageId == "" || err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "请求异常"})
+		return
+	}
+	message, err := Model.GetMessage(companyId.(int64), mid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
@@ -39,4 +45,18 @@ func GetMessageInfo(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, message)
+}
+
+func DeleteMessage(c *gin.Context) {
+	companyId, _ := c.Get("companyId")
+	messageId := c.Param("messageId")
+	mid, _ := strconv.ParseInt(messageId, 10, 64)
+	if !Model.CheckMessageAuth(companyId.(int64), mid) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "消息不是你的删个寄吧"})
+		return
+	} else if !Model.DeleteMessage(mid) {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
+		return
+	}
+	c.JSON(http.StatusOK, nil)
 }

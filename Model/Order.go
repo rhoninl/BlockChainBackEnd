@@ -3,9 +3,7 @@ package Model
 import (
 	"log"
 	"main/Utils"
-	"strconv"
 	"sync"
-	"time"
 )
 
 func GetAllOrder(companyId int64) ([]Utils.Order, error) {
@@ -27,23 +25,6 @@ func GetAllOrder(companyId int64) ([]Utils.Order, error) {
 		orderInfos = append(orderInfos, orderInfo)
 	}
 	return orderInfos, nil
-}
-
-//GetCompanyBasicInfo 通过Id获取企业的类型以及名称 (name,type)
-func GetCompanyBasicInfo(companyId int64) (string, string) {
-	if companyId == 0 {
-		return "", ""
-	}
-	aCompanyId := strconv.FormatInt(companyId, 10)
-	companyName, err := Utils.RDB().Get(aCompanyId + "#Companyname").Result()
-	companyType, err := Utils.RDB().Get(aCompanyId + "#Companytype").Result()
-	if err != nil { //Redis中没有找到则进行查找
-		basicInfo, _ := CompanyBasicInfo(companyId)
-		Utils.RDB().Set(aCompanyId+"#Comanytype", basicInfo.CompanyType, time.Minute*5)
-		Utils.RDB().Set(aCompanyId+"#Companyname", basicInfo.CompanyName, time.Minute*5)
-		return basicInfo.CompanyName, basicInfo.CompanyType
-	}
-	return companyName, companyType
 }
 
 func RecordOrder(info Utils.OrderInfo) (int64, bool, error) {

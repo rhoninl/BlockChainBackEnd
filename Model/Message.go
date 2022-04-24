@@ -25,9 +25,9 @@ func SendMessageTo(messageType int, message string, toId int64, fromId int64) bo
 	return true
 }
 
-func GetAllMessage(CompanyId int64) ([]Utils.MessageList, error) {
-	template := `Select MessageId, MessageType, FromId, isRead,SendTime From MessageQueue Where ToId = ? And isDelete = 0`
-	rows, err := Utils.DB().Query(template, CompanyId)
+func GetMessage(CompanyId, MessageId int64) ([]Utils.MessageList, error) {
+	template := `Select MessageId, MessageType, FromId, isRead,SendTime From MessageQueue Where ToId = ? And isDelete = 0 And MessageId > ?`
+	rows, err := Utils.DB().Query(template, CompanyId, MessageId)
 	if err != nil {
 		log.Println("[GetAllMessage]服务器异常")
 		return nil, err
@@ -77,4 +77,15 @@ func CheckMessageAuth(MessageId, CompanyId int64) bool {
 	var cid int64
 	rows.Scan(&cid)
 	return cid == CompanyId
+}
+
+func DeleteMessage(MessageId int64) bool {
+	template := `Update MessageQueue Set isDelete = 1 Where MessageId = ?`
+	rows, err := Utils.DB().Exec(template, MessageId)
+	if err != nil {
+		log.Println("[DeleteMessage]Make a mistake")
+		return false
+	}
+	num, _ := rows.RowsAffected()
+	return num == 1
 }

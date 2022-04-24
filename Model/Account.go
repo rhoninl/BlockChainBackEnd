@@ -2,9 +2,11 @@ package Model
 
 import (
 	"fmt"
+	"golang.org/x/crypto/bcrypt"
 	"log"
 	"main/Utils"
 	"reflect"
+	"strconv"
 	"time"
 )
 
@@ -97,8 +99,9 @@ func RegisterInfo(info Utils.RegisterInfo) (bool, error) {
 	}
 	template = `Insert Into CompanyInfo Set CompanyId = ?,Email = ?`
 	Utils.DB().Exec(template, companyId, info.ToEmail)
+	cryPassword, _ := bcrypt.GenerateFromPassword([]byte(info.Account.Password), 10)
 	template = `Insert Into Account Set Account = ?,PassWord = ? ,CompanyId = ?`
-	Utils.DB().Exec(template, info.Account.Account, info.Account.Password, companyId)
+	Utils.DB().Exec(template, info.Account.Account, string(cryPassword), companyId)
 	return true, nil
 }
 
@@ -148,6 +151,7 @@ func TryUpdateCompany(info Utils.CompanyBasicInfo) bool {
 		log.Println("[TryUpdateCompany]数据库异常", err)
 		return false
 	}
+	Utils.RDB().Del(string(info.CompanyId))
 	num, _ := result.RowsAffected()
 	return num == 1
 }
@@ -167,7 +171,7 @@ func TryUpdateCompanyInfo(info Utils.CompanyInfo) bool {
 	var addressId int64
 	rows.Scan(&phone, &addressId, &email)
 	fmt.Println(phone, addressId, email, info)
-	Utils.RDB().Set(string(info.CompanyId)+"#addressId", addressId, time.Minute)
+	Utils.RDB().Set(string(info.CompanyId)+"addressId", addressId, time.Minute)
 	if info.Email == email && info.Phone == phone {
 		return false
 	}
@@ -221,20 +225,21 @@ func TryUpdateAddress(info Utils.AddressInfo, id int64) bool {
 	return num == 1
 }
 
-func CheckEmail(account, email string) bool {
-	template := `Select CompanyId From Account Where Account = ?`
+func CheckEmail(account interface{}, email string) bool {
+	if _, ok := account.(string); ok {
+		template := `Select CompanyId From Account Where Account = ?`
+		rows, err := Utils.DB().Query(template, account)
+		if err != nil {
+			log.Println("[CheckEmail]出错了")
+			return false
+		}
+		if !rows.Next() {
+			return false
+		}
+		rows.Scan(&account)
+	}
+	template := `Select Email From CompanyInfo Where CompanyId = ?`
 	rows, err := Utils.DB().Query(template, account)
-	if err != nil {
-		log.Println("[CheckEmail]出错了")
-		return false
-	}
-	if !rows.Next() {
-		return false
-	}
-	var companyId string
-	rows.Scan(&companyId)
-	template = `Select Email From CompanyInfo Where CompanyId = ?`
-	rows, err = Utils.DB().Query(template, companyId)
 	if err != nil {
 		log.Println("[CheckEmail]出错了")
 		return false
@@ -247,13 +252,39 @@ func CheckEmail(account, email string) bool {
 	return oldEmail == email
 }
 
-func ChangePassword(account, password string) bool {
-	template := `Update Account Set PassWord = ? Where Account = ?`
-	result, err := Utils.DB().Exec(template, password, account)
+func ChangePassword(account interface{}, password string) bool {
+	var template string
+	if _, ok := account.(int64); ok {
+		template = `Update Account Set PassWord = ? Where CompanyId = ?`
+	} else {
+		template = `Update Account Set PassWord = ? Where Account = ?`
+	}
+	cryPassword, err := bcrypt.GenerateFromPassword([]byte(password), 10)
+	if err != nil {
+		return false
+	}
+	result, err := Utils.DB().Exec(template, cryPassword, account)
 	if err != nil {
 		log.Println("[ChangePassword]出错了")
 		return false
 	}
 	num, _ := result.RowsAffected()
 	return num == 1
+}
+
+//GetCompanyBasicInfo 通过Id获取企业的类型以及名称 (name,type)
+func GetCompanyBasicInfo(companyId int64) (string, string) {
+	if companyId == 0 {
+		return "", ""
+	}
+	aCompanyId := strconv.FormatInt(companyId, 10)
+	companyName, err := Utils.RDB().Get(aCompanyId + "#Companyname").Result()
+	companyType, err := Utils.RDB().Get(aCompanyId + "#Companytype").Result()
+	if err != nil { //Redis中没有找到则进行查找
+		basicInfo, _ := CompanyBasicInfo(companyId)
+		Utils.RDB().Set(aCompanyId+"#Comanytype", basicInfo.CompanyType, time.Minute*5)
+		Utils.RDB().Set(aCompanyId+"#Companyname", basicInfo.CompanyName, time.Minute*5)
+		return basicInfo.CompanyName, basicInfo.CompanyType
+	}
+	return companyName, companyType
 }

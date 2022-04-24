@@ -3,6 +3,7 @@ package Controller
 import (
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 	"main/Model"
 	"main/Utils"
 	"net/http"
@@ -25,7 +26,7 @@ func Login(c *gin.Context) {
 		return
 	}
 	userInfo.Password, err = Utils.ParsePassword(userInfo.Password)
-	if err != nil || currentInfo.Password != userInfo.Password {
+	if err != nil || bcrypt.CompareHashAndPassword([]byte(currentInfo.Password), []byte(userInfo.Password)) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "密码不正确"})
 		return
 	}
@@ -49,7 +50,6 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "密码错误"})
 		return
 	}
-	fmt.Println(password, accountInfo)
 	accountInfo.Password = password
 	if !Model.CheckEmailUnique(accountInfo.ToEmail) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已被使用"})
@@ -90,23 +90,25 @@ func Info(c *gin.Context) {
 }
 
 func GetAuth(c *gin.Context) {
-	var info Utils.AuthCode
-	info.ToEmail = c.Query("email")
-	if info.ToEmail == "" {
+	var info Utils.GetAuth
+	c.Bind(&info)
+	if info.Email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱无效"})
 		return
 	}
-	if !Model.CheckEmailUnique(info.ToEmail) {
+	if info.Tag != "" && !Model.CheckEmailUnique(info.Email) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已使用"})
 		return
 	}
-	info.Code = Utils.GenVerCode()
-	message := `<html><body style:"background:'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fbkimg.cdn.bcebos.com%2Fpic%2Fb3fb43166d224f4a20a4652df4a687529822720e7bc9&refer=http%3A%2F%2Fbkimg.cdn.bcebos.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1653183161&t=51bbd5bef8fe26d143d2fd2a4a73abf3'"><a>您的验证码为</a><h3>` + info.Code + `</h3><a><br/>验证码有效期为1小时，请在1小时内完成验证<br/>如果不是您本人操作，请忽略本条邮件</a></body></html>`
-	if err := Utils.SendMessage(message, info.ToEmail); err != nil {
+	var codeInfo Utils.AuthCode
+	codeInfo.Code = Utils.GenVerCode()
+	message := `<html><body style:"background:'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fbkimg.cdn.bcebos.com%2Fpic%2Fb3fb43166d224f4a20a4652df4a687529822720e7bc9&refer=http%3A%2F%2Fbkimg.cdn.bcebos.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1653183161&t=51bbd5bef8fe26d143d2fd2a4a73abf3'"><a>您的验证码为</a><h3>` + codeInfo.Code + `</h3><a><br/>验证码有效期为1小时，请在1小时内完成验证<br/>如果不是您本人操作，请忽略本条邮件</a></body></html>`
+	if err := Utils.SendMessage(message, info.Email); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
-	Utils.AuthCodeRegister(info)
+	codeInfo.ToEmail = info.Email
+	Utils.AuthCodeRegister(codeInfo)
 	c.JSON(http.StatusOK, nil)
 }
 
@@ -139,5 +141,27 @@ func ForgetPassword(c *gin.Context) {
 	}
 	message := `<html><body>您的新密码为<h3>` + newPassword + `</h3><br/>登陆后请及时修改<br/></body></html>`
 	Utils.SendMessage(message, form.Email)
+	c.JSON(http.StatusOK, nil)
+}
+
+func ChangePassword(c *gin.Context) {
+	var accountInfo Utils.RegisterInfo
+	c.BindJSON(&accountInfo)
+	companyId, _ := c.Get("companyId")
+	accountInfo.Password, _ = Utils.ParsePassword(accountInfo.Password)
+	accountInfo.Account.CompanyId = companyId.(int64)
+	if !Model.CheckEmail(accountInfo.Account.CompanyId, accountInfo.ToEmail) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "帐号或者邮箱错误"})
+		return
+	}
+	ok, err := Utils.AuthCodeCheck(accountInfo.AuthCode)
+	if !ok || err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "请求异常"})
+		return
+	}
+	if !Model.ChangePassword(accountInfo.Account.CompanyId, accountInfo.Account.Password) {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
+		return
+	}
 	c.JSON(http.StatusOK, nil)
 }

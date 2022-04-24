@@ -38,13 +38,14 @@ func main() {
 	}
 	account := router.Group("/account")
 	{
-		account.GET("/AuthCode", Controller.GetAuth)
+		account.POST("/AuthCode", Controller.GetAuth)
 		account.POST("/Login", Controller.Login)
 		account.POST("/Register", Controller.Register)
 		account.POST("/LogOut", MiddleWare.Auth(), Controller.LogOut)
 		account.GET("/Info", MiddleWare.Auth(), Controller.Info)
 		account.POST("/EditInfo", MiddleWare.Auth(), Controller.EditInfo)
 		account.POST("/Forget", Controller.ForgetPassword)
+		account.POST("/ChangePd", MiddleWare.Auth(), Controller.ChangePassword)
 	}
 
 	stuff := router.Group("/stuff")
@@ -64,8 +65,9 @@ func main() {
 	}
 	message := router.Group("/message")
 	{
-		message.GET("/getAllMessage", MiddleWare.Auth(), Controller.GetAllMessage)
+		message.GET("/getMessage", MiddleWare.Auth(), Controller.GetMessage)
 		message.GET("/getMessageInfo/:id", MiddleWare.Auth(), Controller.GetMessageInfo)
+		message.GET("/deleteMessage/:messageId", MiddleWare.Auth(), Controller.DeleteMessage)
 	}
 	router.GET("/ws", MiddleWare.Auth(), Controller.BuildSocket)
 	router.Run(":8080")

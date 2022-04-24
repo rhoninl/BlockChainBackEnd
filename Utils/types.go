@@ -107,3 +107,8 @@ type MessageList struct {
 	SendTime    string `json:"sendTime"`
 	IsRead      int    `json:"isRead"`
 }
+
+type GetAuth struct {
+	Email string `json:"email"`
+	Tag   string `json:"tag"`
+}
