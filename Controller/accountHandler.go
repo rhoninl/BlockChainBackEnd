@@ -31,13 +31,23 @@ func Login(c *gin.Context) {
 		return
 	}
 	token := Utils.CreateToken(currentInfo.CompanyId)
-	c.SetCookie("token", token, Utils.MAXAGE, "/", "", false, false)
+	//c.SetCookie("token", token, Utils.MAXAGE, "/", "", false, false)
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		Path:     "/",
+		Domain:   "",
+		MaxAge:   604800,
+		Secure:   false,
+		HttpOnly: false,
+		SameSite: 4,
+	})
 	c.JSON(http.StatusOK, nil)
 }
 
 func LogOut(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
-	c.SetCookie("token", "", -1, "/", "", false, true)
+
 	go Model.UseClient().UnRegister(companyId.(int64))
 	fmt.Println(companyId, "is LogOut")
 }
