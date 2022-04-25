@@ -28,11 +28,12 @@ func main() {
 	fmt.Println(f)
 	router := gin.Default()
 	router.Use(cors.Default())
+	router.Use(MiddleWare.CO())
 	homePage := router.Group("/homePage")
 	{
 		homePage.GET("/index", Controller.GetIndex)
 	}
-	account := router.Group("/account", MiddleWare.CO())
+	account := router.Group("/account")
 	{
 		account.POST("/AuthCode", Controller.GetAuth)
 		account.POST("/Login", Controller.Login)
