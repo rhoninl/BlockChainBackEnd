@@ -27,10 +27,7 @@ const f = `
 func main() {
 	fmt.Println(f)
 	router := gin.Default()
-	co := cors.Config{
-		AllowCredentials: true,
-	}
-	router.Use(cors.New(co))
+	router.Use(cors.Default())
 	homePage := router.Group("/homePage")
 	{
 		homePage.GET("/index", Controller.GetIndex)
