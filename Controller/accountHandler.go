@@ -40,7 +40,7 @@ func Login(c *gin.Context) {
 		MaxAge:   604800,
 		Secure:   false,
 		HttpOnly: false,
-		SameSite: 4,
+		SameSite: 3,
 	})
 	c.JSON(http.StatusOK, nil)
 }
