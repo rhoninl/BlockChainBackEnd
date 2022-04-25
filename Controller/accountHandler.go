@@ -17,7 +17,6 @@ func Login(c *gin.Context) {
 		return
 	}
 	currentInfo, exists, err := Model.Login(userInfo)
-	fmt.Println(1)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器出错了"})
 		return
@@ -26,13 +25,11 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "帐号不存在"})
 		return
 	}
-	fmt.Println(2)
 	userInfo.Password, err = Utils.ParsePassword(userInfo.Password)
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(currentInfo.Password), []byte(userInfo.Password)) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "密码不正确"})
 		return
 	}
-	fmt.Println(3)
 	token := Utils.CreateToken(currentInfo.CompanyId)
 	c.SetCookie("token", token, Utils.MAXAGE, "/", "", false, false)
 	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
