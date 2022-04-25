@@ -27,7 +27,7 @@ func Cors() gin.HandlerFunc {
 
 		//允许类型校验
 		if method == "OPTIONS" {
-			c.JSON(http.StatusOK, "ok!")
+			c.JSON(http.StatusNoContent, nil)
 		}
 
 		defer func() {
