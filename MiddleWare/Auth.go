@@ -4,6 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var i = 0
+
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		//token, err := c.Cookie("token")
@@ -30,7 +32,8 @@ func Auth() gin.HandlerFunc {
 		//wg.Wait()
 		//return
 		//	}
-		c.Set("companyId", int64(1))
+		c.Set("companyId", int64(i%2))
+		i++
 	}
 	//c.JSON(http.StatusBadRequest, gin.H{"message": "请先登陆"})
 	//c.Abort()
