@@ -45,7 +45,6 @@ func main() {
 		account.POST("/Forget", Controller.ForgetPassword)
 		account.POST("/ChangePd", MiddleWare.Auth(), Controller.ChangePassword)
 	}
-
 	stuff := router.Group("/stuff", MiddleWare.Auth())
 	{
 		stuff.GET("/getStuff", Controller.GetStuff)
@@ -69,5 +68,5 @@ func main() {
 	}
 	router.GET("/ws", MiddleWare.Auth(), Controller.BuildSocket)
 	//router.RunTLS(":8081", "./Utils/cunyuqing.online_bundle.pem", "./Utils/cunyuqing.online.key")
-	router.RunTLS(":8081", "./Utils/cunyuqing.fun.pem", "./Utils/cunyuqing.fun.key")
+	router.RunTLS(":8081", "./Utils/cunyuqing.online_bundle.pem", "./Utils/cunyuqing.online.key")
 }
