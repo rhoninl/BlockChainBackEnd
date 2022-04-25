@@ -68,5 +68,6 @@ func main() {
 		message.GET("/deleteMessage/:messageId", Controller.DeleteMessage)
 	}
 	router.GET("/ws", MiddleWare.Auth(), Controller.BuildSocket)
-	router.Run(":8080")
+	//router.RunTLS(":8081", "./Utils/cunyuqing.online_bundle.pem", "./Utils/cunyuqing.online.key")
+	router.RunTLS(":8081", "./Utils/cunyuqing.fun.pem", "./Utils/cunyuqing.fun.key")
 }
