@@ -13,7 +13,7 @@ func Auth() gin.HandlerFunc {
 		//if err == nil {
 		//获取CompanyId
 		info, err := Utils.ParseToken(token)
-		if token != "" || err != nil {
+		if token == "" || err != nil {
 			info.CompanyId = int64(1)
 		}
 		//获取成功则向后传输CompanyId
