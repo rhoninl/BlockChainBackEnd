@@ -32,7 +32,7 @@ func main() {
 	{
 		homePage.GET("/index", Controller.GetIndex)
 	}
-	account := router.Group("/account")
+	account := router.Group("/account", MiddleWare.CO())
 	{
 		account.POST("/AuthCode", Controller.GetAuth)
 		account.POST("/Login", Controller.Login)
