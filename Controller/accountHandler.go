@@ -30,11 +30,14 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "密码不正确"})
 		return
 	}
+	fmt.Println(1)
 	token := Utils.CreateToken(currentInfo.CompanyId)
+	fmt.Println(2)
 	c.SetCookie("token", token, Utils.MAXAGE, "/", "", false, false)
+	fmt.Println(3)
 	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://49.232.128.228:8080")
-
+	fmt.Println(1)
 	c.JSON(http.StatusOK, nil)
 }
 
