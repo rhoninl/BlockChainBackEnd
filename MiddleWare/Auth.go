@@ -14,7 +14,7 @@ func Auth() gin.HandlerFunc {
 		//获取CompanyId
 		info, err := Utils.ParseToken(token)
 		if err == nil {
-			info.CompanyId = 1
+			info.CompanyId = int64(1)
 		}
 		//获取成功则向后传输CompanyId
 		c.Set("companyId", info.CompanyId)
