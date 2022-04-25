@@ -30,7 +30,7 @@ func Auth() gin.HandlerFunc {
 		//wg.Wait()
 		//return
 		//	}
-		c.Set("companyId", 1)
+		c.Set("companyId", int64(1))
 	}
 	//c.JSON(http.StatusBadRequest, gin.H{"message": "请先登陆"})
 	//c.Abort()
