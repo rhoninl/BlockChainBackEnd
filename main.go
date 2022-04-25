@@ -44,26 +44,26 @@ func main() {
 		account.POST("/ChangePd", MiddleWare.Auth(), Controller.ChangePassword)
 	}
 
-	stuff := router.Group("/stuff")
+	stuff := router.Group("/stuff", MiddleWare.Auth())
 	{
-		stuff.GET("/getStuff", MiddleWare.Auth(), Controller.GetStuff)
-		stuff.POST("/addStuff", MiddleWare.Auth(), Controller.AddStuff)
+		stuff.GET("/getStuff", Controller.GetStuff)
+		stuff.POST("/addStuff", Controller.AddStuff)
 	}
-	company := router.Group("/company")
+	company := router.Group("/company", MiddleWare.Auth())
 	{
-		company.GET("/getJointVenture", MiddleWare.Auth(), Controller.GetJointVenture)
-		company.POST("/makeFriends", MiddleWare.Auth(), Controller.MakeFriend)
+		company.GET("/getJointVenture", Controller.GetJointVenture)
+		company.POST("/makeFriends", Controller.MakeFriend)
 	}
-	order := router.Group("/order")
+	order := router.Group("/order", MiddleWare.Auth())
 	{
-		order.GET("/getAllOrder", MiddleWare.Auth(), Controller.GetAllOrder)
-		order.POST("/submitOrder", MiddleWare.Auth(), Controller.BindForm)
+		order.GET("/getAllOrder", Controller.GetAllOrder)
+		order.POST("/submitOrder", Controller.BindForm)
 	}
-	message := router.Group("/message")
+	message := router.Group("/message", MiddleWare.Auth())
 	{
-		message.GET("/getMessage", MiddleWare.Auth(), Controller.GetMessage)
-		message.GET("/getMessageInfo/:id", MiddleWare.Auth(), Controller.GetMessageInfo)
-		message.GET("/deleteMessage/:messageId", MiddleWare.Auth(), Controller.DeleteMessage)
+		message.GET("/getMessage", Controller.GetMessage)
+		message.GET("/getMessageInfo/:id", Controller.GetMessageInfo)
+		message.GET("/deleteMessage/:messageId", Controller.DeleteMessage)
 	}
 	router.GET("/ws", MiddleWare.Auth(), Controller.BuildSocket)
 	router.Run(":8080")

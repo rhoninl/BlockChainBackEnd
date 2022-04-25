@@ -33,7 +33,7 @@ func Login(c *gin.Context) {
 	token := Utils.CreateToken(currentInfo.CompanyId)
 	c.SetCookie("token", token, Utils.MAXAGE, "/", "", false, false)
 	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-	c.Writer.Header().Set("Access-Control-Allow-Origin", c.Request.Header.Get("Origin"))
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://192.168.1.101:8080")
 	c.JSON(http.StatusOK, nil)
 }
 
