@@ -27,6 +27,9 @@ func main() {
 	fmt.Println(f)
 	router := gin.Default()
 	router.Use(MiddleWare.Cors())
+	router.GET("/", func(c *gin.Context) {
+		c.Writer.WriteString("看nmlgcb")
+	})
 	homePage := router.Group("/homePage")
 	{
 		homePage.GET("/index", Controller.GetIndex)
