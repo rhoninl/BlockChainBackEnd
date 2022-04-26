@@ -11,12 +11,14 @@ func Auth() gin.HandlerFunc {
 		token, err := c.Cookie("token")
 		//if err == nil {
 		//获取CompanyId
-		info, err := Utils.ParseToken(token)
 		var companyId = int64(1)
-		if token != "" && err == nil {
-			companyId = info.CompanyId
-		} else {
+		if err == nil {
 			fmt.Println("有个小比崽子没登陆")
+		} else {
+			info, err := Utils.ParseToken(token)
+			if err == nil {
+				companyId = info.CompanyId
+			}
 		}
 		//获取成功则向后传输CompanyId
 		c.Set("companyId", companyId)
@@ -33,9 +35,9 @@ func Auth() gin.HandlerFunc {
 		//		//http.SetCookie(c.Writer, &http.Cookie{})
 		//	}
 		//}(info)
-		c.Next() //继续执行后续程序
+		//c.Next() //继续执行后续程序
 		//wg.Wait()
-		return
+		//return
 		//}
 	}
 }
