@@ -11,7 +11,7 @@ import (
 func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie("token")
-		if err == nil {
+		if err == nil && token != "" {
 			info, err := Utils.ParseToken(token)
 			if err == nil {
 				c.Set("companyId", info.CompanyId)
@@ -41,5 +41,6 @@ func Auth() gin.HandlerFunc {
 			}
 		}
 		c.JSON(http.StatusBadRequest, gin.H{"message": "请先登陆"})
+		c.Abort()
 	}
 }
