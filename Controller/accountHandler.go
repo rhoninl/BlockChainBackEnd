@@ -32,6 +32,16 @@ func Login(c *gin.Context) {
 	}
 	token := Utils.CreateToken(currentInfo.CompanyId)
 	c.SetCookie("token", token, Utils.MAXAGE, "/", "", true, false)
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "token",
+		Value:    token,
+		Path:     "/",
+		Domain:   "",
+		MaxAge:   Utils.MAXAGE,
+		Secure:   true,
+		HttpOnly: false,
+		SameSite: 4,
+	})
 	c.JSON(http.StatusOK, nil)
 }
 
