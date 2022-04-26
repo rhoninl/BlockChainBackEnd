@@ -32,8 +32,6 @@ func Login(c *gin.Context) {
 	}
 	token := Utils.CreateToken(currentInfo.CompanyId)
 	//c.SetCookie("token", token, Utils.MAXAGE, "/", "", true, false)
-	c.Writer.Header().Set("Access-Control-Allow-Origin", c.Request.Header.Get("Origin"))
-	c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
 	http.SetCookie(c.Writer, &http.Cookie{
 		Name:     "token",
 		Value:    token,
