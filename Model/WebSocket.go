@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
+	"runtime"
 	"sync"
 	"time"
 )
@@ -37,7 +38,10 @@ func (c *Client) Login(conn *websocket.Conn, id int64) {
 	c.clientGroup[companyType][id] = struct{}{}
 	c.clientNum++
 	num, _ := GetUnReadNum(id)
-	c.SendMessageToId(gin.H{"num": num}, id)
+	c.SendMessageToId(gin.H{
+		"UnReadMessageNum": num,
+		"OnlineNum":        c.clientNum,
+	}, id)
 }
 
 func (c *Client) SendMessageToId(message interface{}, id int64) {
@@ -64,35 +68,24 @@ func (c *Client) HeartBeat() {
 	wg := sync.WaitGroup{}
 	for {
 		select {
-		case <-time.After(time.Minute * 3):
+		case <-time.After(time.Second * 5):
 			for k, v := range c.clients {
 				wg.Add(1)
 				ch <- struct{}{} //写入信息到channel用于计数
 				go func(id int64, conn *websocket.Conn) {
-					ms := make(chan string, 1)                        //用于接收数据协程与检测协程的同步
-					conn.WriteMessage(9, []byte(string(c.clientNum))) // 发送验证消息hb
-					go func() {                                       // 创建协程接收信息
-						_, message, _ := conn.ReadMessage() //仅需接收到消息即可
-						select {
-						case ms <- string(message):
-							return // 将消息写入channel可用于表明接收到消息，即联通
-						case <-ms:
-							return
-						}
+					defer func() {
+						wg.Done()
+						<-ch
 					}()
-					select {
-					case <-time.After(time.Second * 10): //十秒超时断开链接
-						ms <- "TimeOut"  //超时给接受协程让其停止接受并结束协程
-						c.UnRegister(id) //超时断开连接
-					case <-ms: //接收到消息，没啥问题
+					err := conn.WriteJSON(gin.H{"OnlineNum": c.clientNum})
+					if err != nil {
+						c.UnRegister(id)
 					}
-					close(ms)
-					<-ch      //协程结束，计数--
-					wg.Done() //协程结束
 				}(k, v)
 			}
-			wg.Wait() //等待所有协程结束
 		}
+		wg.Wait() //等待所有协程结束
+		runtime.GC()
 	}
 	close(ch)
 }

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"main/Utils"
-	"sync"
 )
 
 func SendMessageTo(messageType int, message string, toId int64, fromId int64) bool {
@@ -15,7 +14,7 @@ func SendMessageTo(messageType int, message string, toId int64, fromId int64) bo
 		log.Panicln("[SendMessageTo]服务器异常")
 		return false
 	}
-	messageId, _ := result.LastInsertId()
+	messageId, err := result.LastInsertId()
 	template = `Insert Into MessageInfo Set MessageId = ?,MessageContent = ?`
 	result, err = Utils.DB().Exec(template, messageId, message)
 	if err != nil {
@@ -26,7 +25,7 @@ func SendMessageTo(messageType int, message string, toId int64, fromId int64) bo
 }
 
 func GetMessage(CompanyId, MessageId int64) ([]Utils.MessageList, error) {
-	template := `Select MessageId, MessageType, FromId, isRead,SendTime From MessageQueue Where ToId = ? And isDelete = 0 And MessageId > ?`
+	template := `Select MessageId, MessageType, FromId, isRead,SendTime From MessageQueue Where ToId = ? And isDelete = 0 And MessageId > ? Order By MessageId Desc`
 	rows, err := Utils.DB().Query(template, CompanyId, MessageId)
 	if err != nil {
 		log.Println("[GetAllMessage]服务器异常")
@@ -36,9 +35,7 @@ func GetMessage(CompanyId, MessageId int64) ([]Utils.MessageList, error) {
 	var messageList []Utils.MessageList
 	var message Utils.MessageList
 	var companyId int64
-	wg := sync.WaitGroup{}
 	for rows.Next() {
-		wg.Add(1)
 		rows.Scan(&message.MessageId, &message.MessageType, &companyId, &message.IsRead, &message.SendTime)
 		message.CompanyName, _ = GetCompanyBasicInfo(companyId)
 		messageList = append(messageList, message)
@@ -102,4 +99,17 @@ func GetUnReadNum(CompanyId int64) (int64, error) {
 	var num int64
 	rows.Scan(&num)
 	return num, nil
+}
+
+func GetMessageBasicInfo(MessageId int64) (Utils.MessageInfo, error) {
+	var messageInfo Utils.MessageInfo
+	template := `Select MessageType, FromId, ToId From MessageQueue Where MessageId = ?`
+	rows, err := Utils.DB().Query(template, MessageId)
+	if err != nil {
+		return messageInfo, err
+	}
+	if rows.Next() {
+		rows.Scan(&messageInfo.MessageType, &messageInfo.FromId, &messageInfo.ToId)
+	}
+	return messageInfo, nil
 }

@@ -27,3 +27,20 @@ func GetJointVenture(companyId int64) ([]Utils.CompanyList, error) {
 	}
 	return companyList, nil
 }
+
+func PassReply(reply Utils.ReplyFriend) bool {
+	template := `Select FromId From MessageQueue Where MessageId = ? limit 1`
+	rows, err := Utils.DB().Query(template, reply.MessageId)
+	if err != nil || !rows.Next() {
+		return false
+	}
+	var fromId int64
+	rows.Scan(&fromId)
+	template = `Insert Into Relation Set CompanyId = ?,TargetCompanyId = ?`
+	result, err := Utils.DB().Exec(template, fromId, reply.CompanyId)
+	if err != nil {
+		return false
+	}
+	num, err := result.RowsAffected()
+	return num == 1
+}

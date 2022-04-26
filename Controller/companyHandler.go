@@ -36,3 +36,25 @@ func MakeFriend(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, nil)
 }
+
+func ReplyFriend(c *gin.Context) {
+	companyId, _ := c.Get("companyId")
+	var reply Utils.ReplyFriend
+	c.Bind(&reply)
+	reply.CompanyId = companyId.(int64)
+	messageInfo, err := Model.GetMessageBasicInfo(reply.MessageId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "出错了，请联系工作人员"})
+		return
+	}
+	if reply.CompanyId != messageInfo.ToId {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "不是你的消息，瞎点nm"})
+		return
+	}
+	if reply.Ok {
+		Model.PassReply(reply)
+	} else {
+		Model.SendMessageTo(0, "对方觉得你是个煞笔，所以拒绝了你的好友请求", messageInfo.ToId, messageInfo.FromId)
+	}
+	c.JSON(http.StatusOK, nil)
+}

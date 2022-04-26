@@ -112,3 +112,17 @@ type GetAuth struct {
 	Email string `json:"email"`
 	Tag   string `json:"tag"`
 }
+
+type ReplyFriend struct {
+	CompanyId int64 `json:"companyId"`
+	ToId      int64 `json:"toId"`
+	MessageId int64 `json:"messageId"`
+	Ok        bool  `json:"ok"`
+}
+
+type MessageInfo struct {
+	MessageId   int64 `json:"messageId"`
+	FromId      int64 `json:"fromId"`
+	ToId        int64 `json:"toId"`
+	MessageType int64 `json:"messageType"`
+}
