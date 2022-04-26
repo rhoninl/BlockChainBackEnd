@@ -36,7 +36,7 @@ func Login(c *gin.Context) {
 		Name:     "token",
 		Value:    token,
 		Path:     "/",
-		Domain:   c.Request.Header.Get("Origin"),
+		Domain:   "",
 		MaxAge:   Utils.MAXAGE,
 		Secure:   true,
 		HttpOnly: false,

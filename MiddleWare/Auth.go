@@ -45,7 +45,7 @@ func Auth2() gin.HandlerFunc {
 							Name:     "token",
 							Value:    newToken,
 							Path:     "/",
-							Domain:   c.Request.Header.Get("Origin"),
+							Domain:   "",
 							MaxAge:   Utils.MAXAGE,
 							Secure:   true,
 							SameSite: 4,
