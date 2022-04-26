@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"main/Controller"
 	"main/MiddleWare"
@@ -26,7 +27,10 @@ const f = `
 func main() {
 	fmt.Println(f)
 	router := gin.Default()
-	router.Use(MiddleWare.MyCors())
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:8080"}
+	config.AllowCredentials = true
+	router.Use(cors.New(config))
 	router.GET("/", func(c *gin.Context) {
 		c.Writer.WriteString("看nmlgcb")
 	})
