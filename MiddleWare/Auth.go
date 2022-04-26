@@ -1,7 +1,6 @@
 package MiddleWare
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"main/Utils"
 	"net/http"
@@ -10,22 +9,6 @@ import (
 )
 
 func Auth() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		token, err := c.Cookie("token")
-		var companyId = int64(1)
-		if err != nil {
-			fmt.Println("有个小比崽子没登陆")
-		} else {
-			info, err := Utils.ParseToken(token)
-			if err == nil {
-				companyId = info.CompanyId
-			}
-		}
-		c.Set("companyId", companyId)
-	}
-}
-
-func Auth2() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie("token")
 		if err == nil {
