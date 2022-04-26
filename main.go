@@ -28,7 +28,7 @@ func main() {
 	fmt.Println(f)
 	router := gin.Default()
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:8080"}
+	config.AllowOrigins = []string{"http://localhost:8080", "http://localhost:8081"}
 	config.AllowCredentials = true
 	router.Use(cors.New(config))
 	router.GET("/", func(c *gin.Context) {
@@ -58,6 +58,7 @@ func main() {
 	{
 		company.GET("/getJointVenture", Controller.GetJointVenture)
 		company.POST("/makeFriends", Controller.MakeFriend)
+		company.POST("/reply", Controller.ReplyFriend)
 	}
 	order := router.Group("/order", MiddleWare.Auth())
 	{
@@ -71,6 +72,6 @@ func main() {
 		message.GET("/deleteMessage/:messageId", Controller.DeleteMessage)
 	}
 	router.GET("/ws", MiddleWare.Auth(), Controller.BuildSocket)
-	//router.RunTLS(":8081", "./Utils/cunyuqing.online_bundle.pem", "./Utils/cunyuqing.online.key")
+	//router.Run(":8080")
 	router.RunTLS(":8081", "./Utils/cunyuqing.online_bundle.pem", "./Utils/cunyuqing.online.key")
 }

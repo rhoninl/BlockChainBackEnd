@@ -68,7 +68,7 @@ func (c *Client) HeartBeat() {
 	wg := sync.WaitGroup{}
 	for {
 		select {
-		case <-time.After(time.Second * 5):
+		case <-time.After(time.Minute * 5):
 			for k, v := range c.clients {
 				wg.Add(1)
 				ch <- struct{}{} //写入信息到channel用于计数

@@ -14,7 +14,7 @@ func SendMessageTo(messageType int, message string, toId int64, fromId int64) bo
 		log.Panicln("[SendMessageTo]服务器异常")
 		return false
 	}
-	messageId, err := result.LastInsertId()
+	messageId, err := result.LastInsertId() ////
 	template = `Insert Into MessageInfo Set MessageId = ?,MessageContent = ?`
 	result, err = Utils.DB().Exec(template, messageId, message)
 	if err != nil {
