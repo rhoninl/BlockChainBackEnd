@@ -1,7 +1,6 @@
 package MiddleWare
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"main/Utils"
 	"sync"
@@ -14,12 +13,12 @@ func Auth() gin.HandlerFunc {
 		//if err == nil {
 		//获取CompanyId
 		info, err := Utils.ParseToken(token)
-		if token == "" || err != nil {
-			info.CompanyId = int64(1)
+		var companyId = int64(1)
+		if token != "" && err == nil {
+			companyId = info.CompanyId
 		}
 		//获取成功则向后传输CompanyId
-		fmt.Println(info.CompanyId)
-		c.Set("companyId", info.CompanyId)
+		c.Set("companyId", companyId)
 		wg := sync.WaitGroup{} //同步
 		//协程执行闭包中的 续杯程序
 		go func(info *Utils.CustomClaims) {
