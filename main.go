@@ -70,6 +70,7 @@ func main() {
 		message.GET("/getMessage", Controller.GetMessage)
 		message.GET("/getMessageInfo/:id", Controller.GetMessageInfo)
 		message.GET("/deleteMessage/:messageId", Controller.DeleteMessage)
+		message.POST("/company/reply", Controller.ReplyFriend)
 	}
 	router.GET("/ws", MiddleWare.Auth(), Controller.BuildSocket)
 	//router.Run(":8080")

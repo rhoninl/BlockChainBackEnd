@@ -25,10 +25,10 @@ func SendMessageTo(messageType int, message string, toId int64, fromId int64) bo
 }
 
 func GetMessage(CompanyId, MessageId int64) ([]Utils.MessageList, error) {
-	template := `Select MessageId, MessageType, FromId, isRead,SendTime From MessageQueue Where ToId = ? And isDelete = 0 And MessageId > ? Order By MessageId Desc`
+	template := `Select MessageId, MessageType, FromId, isRead,SendTime,isReply From MessageQueue Where ToId = ? And isDelete = 0 And MessageId > ? Order By MessageId Desc`
 	rows, err := Utils.DB().Query(template, CompanyId, MessageId)
 	if err != nil {
-		log.Println("[GetAllMessage]服务器异常")
+		log.Println("[GetMessage]服务器异常")
 		return nil, err
 	}
 	defer rows.Close()
@@ -36,7 +36,7 @@ func GetMessage(CompanyId, MessageId int64) ([]Utils.MessageList, error) {
 	var message Utils.MessageList
 	var companyId int64
 	for rows.Next() {
-		rows.Scan(&message.MessageId, &message.MessageType, &companyId, &message.IsRead, &message.SendTime)
+		rows.Scan(&message.MessageId, &message.MessageType, &companyId, &message.IsRead, &message.SendTime, &message.IsReply)
 		message.CompanyName, _ = GetCompanyBasicInfo(companyId)
 		messageList = append(messageList, message)
 	}
@@ -48,6 +48,7 @@ func GetMessageInfo(MessageId int64) (Utils.Message, error) {
 	template := `Select MessageContent From MessageInfo Where MessageId = ? Limit 1`
 	rows, err := Utils.DB().Query(template, MessageId)
 	if err != nil {
+		log.Println("[GetMessageInfo]", err)
 		return message, err
 	}
 	defer rows.Close()
@@ -88,7 +89,7 @@ func DeleteMessage(MessageId int64) bool {
 }
 
 func GetUnReadNum(CompanyId int64) (int64, error) {
-	template := `Select Count(*) From MessageQueue Where ToId = ? And isRead = 0 Group By ToId Limit 1`
+	template := `Select Count(*) From MessageQueue Where ToId = ? And isRead = 0 And isDelete = 0 Group By ToId Limit 1`
 	rows, err := Utils.DB().Query(template, CompanyId)
 	if err != nil {
 		log.Println("[GetUnReadNum]Make a mistake", err)
@@ -103,13 +104,24 @@ func GetUnReadNum(CompanyId int64) (int64, error) {
 
 func GetMessageBasicInfo(MessageId int64) (Utils.MessageInfo, error) {
 	var messageInfo Utils.MessageInfo
-	template := `Select MessageType, FromId, ToId From MessageQueue Where MessageId = ?`
+	template := `Select MessageType, FromId, ToId ,isReply From MessageQueue Where MessageId = ?`
 	rows, err := Utils.DB().Query(template, MessageId)
 	if err != nil {
 		return messageInfo, err
 	}
 	if rows.Next() {
-		rows.Scan(&messageInfo.MessageType, &messageInfo.FromId, &messageInfo.ToId)
+		rows.Scan(&messageInfo.MessageType, &messageInfo.FromId, &messageInfo.ToId, &messageInfo.IsReply)
 	}
 	return messageInfo, nil
+}
+
+func SetReply(MessageId int64) bool {
+	template := `Update MessageQueue Set isReply = 1 Where MessageId = ? limit 1`
+	result, err := Utils.DB().Exec(template, MessageId)
+	if err != nil {
+		log.Println(`[SetReply] Make a mistake`)
+		return false
+	}
+	num, _ := result.RowsAffected()
+	return num == 1
 }

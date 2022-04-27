@@ -44,3 +44,13 @@ func PassReply(reply Utils.ReplyFriend) bool {
 	num, err := result.RowsAffected()
 	return num == 1
 }
+
+func CheckCompanyFriend(company1, company2 int64) bool {
+	template := `Select CompanyId From Relation Where CompanyId = ? And TargetCompanyId = ? Or TargetCompanyId = ? And CompanyId = ?`
+	rows, err := Utils.DB().Query(template, company1, company2, company2, company1)
+	if err != nil {
+		log.Println("[CheckCompanyFriend] make a mistake", err)
+		return false
+	}
+	return !rows.Next()
+}

@@ -23,6 +23,14 @@ func MakeFriend(c *gin.Context) {
 	fromCompanyId, _ := c.Get("companyId")
 	c.Bind(&targetCompany)
 	thisCompany.CompanyId = fromCompanyId.(int64)
+	if thisCompany.CompanyId == targetCompany.CompanyId {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "自己跟自己建交，你这个人可真有意思"})
+		return
+	}
+	if !Model.CheckCompanyFriend(thisCompany.CompanyId, targetCompany.CompanyId) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "都建交过了，还想咋建交，服了"})
+		return
+	}
 	thisCompany.CompanyName, thisCompany.CompanyType = Model.GetCompanyBasicInfo(thisCompany.CompanyId)
 	targetCompany.CompanyName, _ = Model.GetCompanyBasicInfo(targetCompany.CompanyId)
 	if targetCompany.CompanyName == "" {
@@ -42,13 +50,16 @@ func ReplyFriend(c *gin.Context) {
 	var reply Utils.ReplyFriend
 	c.Bind(&reply)
 	reply.CompanyId = companyId.(int64)
+
 	messageInfo, err := Model.GetMessageBasicInfo(reply.MessageId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "出错了，请联系工作人员"})
 		return
-	}
-	if reply.CompanyId != messageInfo.ToId {
+	} else if reply.CompanyId != messageInfo.ToId {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "不是你的消息，瞎点nm"})
+		return
+	} else if messageInfo.IsReply == 1 {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "消息回过了还回，是不是有点大病?"})
 		return
 	}
 	if reply.Ok {
@@ -56,5 +67,6 @@ func ReplyFriend(c *gin.Context) {
 	} else {
 		Model.SendMessageTo(0, "对方觉得你是个煞笔，所以拒绝了你的好友请求", messageInfo.ToId, messageInfo.FromId)
 	}
+	go Model.SetReply(reply.MessageId)
 	c.JSON(http.StatusOK, nil)
 }

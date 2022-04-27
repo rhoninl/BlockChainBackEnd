@@ -35,7 +35,7 @@ func GetMessageInfo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "信息错误"})
 		return
 	}
-	if !Model.CheckMessageAuth(companyId.(int64), fMessageId) {
+	if !Model.CheckMessageAuth(fMessageId, companyId.(int64)) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "滚蛋，消息不是你的"})
 		return
 	}
@@ -51,7 +51,7 @@ func DeleteMessage(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
 	messageId := c.Param("messageId")
 	mid, _ := strconv.ParseInt(messageId, 10, 64)
-	if !Model.CheckMessageAuth(companyId.(int64), mid) {
+	if !Model.CheckMessageAuth(mid, companyId.(int64)) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "消息不是你的删个寄吧"})
 		return
 	} else if !Model.DeleteMessage(mid) {

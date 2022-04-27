@@ -106,6 +106,7 @@ type MessageList struct {
 	MessageType string `json:"messageType"`
 	SendTime    string `json:"sendTime"`
 	IsRead      int    `json:"isRead"`
+	IsReply     int    `json:"isReply"`
 }
 
 type GetAuth struct {
@@ -125,4 +126,5 @@ type MessageInfo struct {
 	FromId      int64 `json:"fromId"`
 	ToId        int64 `json:"toId"`
 	MessageType int64 `json:"messageType"`
+	IsReply     int64 `json:"isReply"`
 }

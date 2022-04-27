@@ -33,6 +33,11 @@ func init() {
 }
 
 func (c *Client) Login(conn *websocket.Conn, id int64) {
+	_, exists := c.clients[id]
+	if exists {
+		c.SendMessageToId(gin.H{"message": "您的帐号在另一个地方登陆，寄"}, id)
+		c.UnRegister(id)
+	}
 	c.clients[id] = conn
 	_, companyType := GetCompanyBasicInfo(id)
 	c.clientGroup[companyType][id] = struct{}{}
