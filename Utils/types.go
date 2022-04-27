@@ -103,7 +103,7 @@ type Message struct {
 type MessageList struct {
 	MessageId   int64  `json:"messageId"`
 	CompanyName string `json:"companyName"`
-	MessageType string `json:"companyType"`
+	MessageType string `json:"messageType"`
 	SendTime    string `json:"sendTime"`
 	IsRead      int    `json:"isRead"`
 }
