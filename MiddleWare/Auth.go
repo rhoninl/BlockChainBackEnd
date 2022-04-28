@@ -30,7 +30,7 @@ func Auth() gin.HandlerFunc {
 							Path:     "/",
 							Domain:   "",
 							MaxAge:   Utils.MAXAGE,
-							Secure:   false,
+							Secure:   true,
 							SameSite: 4,
 						})
 					}

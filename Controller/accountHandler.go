@@ -38,7 +38,7 @@ func Login(c *gin.Context) {
 		Path:     "/",
 		Domain:   "",
 		MaxAge:   Utils.MAXAGE,
-		Secure:   false,
+		Secure:   true,
 		HttpOnly: false,
 		SameSite: 4,
 	})
