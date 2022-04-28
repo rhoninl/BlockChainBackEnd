@@ -34,6 +34,7 @@ func PassReply(reply Utils.ReplyFriend) bool {
 	if err != nil || !rows.Next() {
 		return false
 	}
+	defer rows.Close()
 	var fromId int64
 	rows.Scan(&fromId)
 	template = `Insert Into Relation Set CompanyId = ?,TargetCompanyId = ?`
@@ -52,5 +53,6 @@ func CheckCompanyFriend(company1, company2 int64) bool {
 		log.Println("[CheckCompanyFriend] make a mistake", err)
 		return false
 	}
+	defer rows.Close()
 	return !rows.Next()
 }

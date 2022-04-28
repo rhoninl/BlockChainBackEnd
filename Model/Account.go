@@ -233,6 +233,7 @@ func CheckEmail(account interface{}, email string) bool {
 			log.Println("[CheckEmail]出错了")
 			return false
 		}
+		defer rows.Close()
 		if !rows.Next() {
 			return false
 		}

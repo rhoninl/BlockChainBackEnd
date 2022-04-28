@@ -31,3 +31,22 @@ func InsertStuff(stuff Utils.Stuff, companyId int64) (int64, error) {
 	line, _ := rows.LastInsertId()
 	return line, nil
 }
+
+func CheckStuffCompany(stuffId, companyId int64) bool {
+	template := `Select CompanyId From Staff Where StaffId = ?`
+	rows, err := Utils.DB().Query(template, stuffId)
+	if err != nil || !rows.Next() {
+		log.Println("[CheckStuffCompany] make a mistake", err)
+		return false
+	}
+	defer rows.Close()
+	var sCompanyId int64
+	rows.Scan(&sCompanyId)
+	return sCompanyId == companyId
+}
+
+func DeleteStuff(stuffId int64) error {
+	template := `Update Staff Set isDelete = 1 Where StaffId = ? limit 1`
+	_, err := Utils.DB().Exec(template, stuffId)
+	return err
+}

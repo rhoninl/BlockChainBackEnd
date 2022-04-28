@@ -70,6 +70,7 @@ func CheckMessageAuth(MessageId, CompanyId int64) bool {
 	if err != nil {
 		return false
 	}
+	defer rows.Close()
 	if !rows.Next() {
 		return false
 	}
@@ -110,6 +111,7 @@ func GetMessageBasicInfo(MessageId int64) (Utils.MessageInfo, error) {
 	if err != nil {
 		return messageInfo, err
 	}
+	defer rows.Close()
 	if rows.Next() {
 		rows.Scan(&messageInfo.MessageType, &messageInfo.FromId, &messageInfo.ToId, &messageInfo.IsReply)
 	}
