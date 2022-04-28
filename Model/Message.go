@@ -2,12 +2,13 @@ package Model
 
 import (
 	"errors"
+	"github.com/gin-gonic/gin"
 	"log"
 	"main/Utils"
 )
 
 func SendMessageTo(messageType int, message string, toId int64, fromId int64) bool {
-	go UseClient().SendMessageToId("有一条新消息", toId)
+	go UseClient().SendMessageToId(gin.H{"message": "有一条新消息", "messageType": 1}, toId)
 	template := `Insert Into MessageQueue Set MessageType = ? , FromId = ?,ToId = ?,SendTime=now()`
 	result, err := Utils.DB().Exec(template, messageType, fromId, toId)
 	if err != nil {

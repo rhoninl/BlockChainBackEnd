@@ -35,7 +35,7 @@ func init() {
 func (c *Client) Login(conn *websocket.Conn, id int64) {
 	_, exists := c.clients[id]
 	if exists {
-		c.SendMessageToId(gin.H{"message": "您的帐号在另一个地方登陆，寄"}, id)
+		c.SendMessageToId(gin.H{"message": "您的帐号在另一个地方登陆，寄", "messageType": -1}, id)
 		c.UnRegister(id)
 	}
 	c.clients[id] = conn
@@ -82,7 +82,7 @@ func (c *Client) HeartBeat() {
 						wg.Done()
 						<-ch
 					}()
-					err := conn.WriteJSON(gin.H{"OnlineNum": c.clientNum})
+					err := conn.WriteJSON(gin.H{"OnlineNum": c.clientNum, "messageType": 0})
 					if err != nil {
 						c.UnRegister(id)
 					}
