@@ -46,7 +46,7 @@ func CheckStuffCompany(stuffId, companyId int64) bool {
 }
 
 func DeleteStuff(stuffId int64) error {
-	template := `Update Staff Set isDelete = 1 Where StaffId = ? limit 1`
+	template := `Update Staff Set isDelete = t Where StaffId = ? limit 1`
 	_, err := Utils.DB().Exec(template, stuffId)
 	return err
 }

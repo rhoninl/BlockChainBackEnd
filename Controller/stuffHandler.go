@@ -35,7 +35,7 @@ func AddStuff(c *gin.Context) {
 
 func DeleteStuff(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
-	stuffId := c.Query("Id")
+	stuffId := c.Query("id")
 	iStuffId, err := strconv.ParseInt(stuffId, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "请求错误"})
