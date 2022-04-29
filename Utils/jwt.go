@@ -29,7 +29,7 @@ func CreateToken(CompanyId int64) string {
 	if err != nil {
 		log.Panicln(err)
 	}
-	return tokenString
+	return AesEncryptCBC(tokenString)
 }
 
 func ParseToken(tokenString string) (*CustomClaims, error) {

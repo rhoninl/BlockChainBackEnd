@@ -25,7 +25,7 @@ func Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "帐号不存在"})
 		return
 	}
-	userInfo.Password, err = Utils.ParsePassword(userInfo.Password)
+	userInfo.Password, err = Utils.AesDecryptCBC(userInfo.Password)
 	if err != nil || bcrypt.CompareHashAndPassword([]byte(currentInfo.Password), []byte(userInfo.Password)) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "密码不正确"})
 		return
@@ -158,7 +158,7 @@ func ChangePassword(c *gin.Context) {
 	var accountInfo Utils.RegisterInfo
 	c.BindJSON(&accountInfo)
 	companyId, _ := c.Get("companyId")
-	accountInfo.Password, _ = Utils.ParsePassword(accountInfo.Password)
+	accountInfo.Password, _ = Utils.AesDecryptCBC(accountInfo.Password)
 	accountInfo.Account.CompanyId = companyId.(int64)
 	if !Model.CheckEmail(accountInfo.Account.CompanyId, accountInfo.ToEmail) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "帐号或者邮箱错误"})
