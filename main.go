@@ -77,8 +77,8 @@ func main() {
 	message := router.Group("/message", MiddleWare.Auth())
 	{
 		message.GET("/getMessage", Controller.GetMessage)
-		message.GET("/getMessageInfo/:id", Controller.GetMessageInfo)
-		message.GET("/deleteMessage/:messageId", Controller.DeleteMessage)
+		message.GET("/getMessageInfo", Controller.GetMessageInfo)
+		message.GET("/deleteMessage", Controller.DeleteMessage)
 		message.POST("/company/reply", Controller.ReplyFriend)
 	}
 	router.GET("/ws", MiddleWare.Auth(), Controller.BuildSocket)
