@@ -13,7 +13,7 @@ func Auth() gin.HandlerFunc {
 		token, err := c.Cookie("token")
 		if err == nil && token != "" {
 			data, err := Utils.AesDecryptCBC(token)
-			if err != nil {
+			if err == nil {
 				info, err := Utils.ParseToken(data)
 				if err == nil {
 					c.Set("companyId", info.CompanyId)
