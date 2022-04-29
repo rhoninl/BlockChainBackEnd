@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"main/Utils"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 )
@@ -12,6 +13,7 @@ func Auth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token, err := c.Cookie("token")
 		if err == nil && token != "" {
+			token = strings.ReplaceAll(token, " ", "+") // !!!!!! token里面的+会变成空格!!!!!!!!!!!
 			data, err := Utils.AesDecryptCBC(token)
 			if err == nil {
 				info, err := Utils.ParseToken(data)

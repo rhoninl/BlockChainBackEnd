@@ -204,7 +204,7 @@ create table if not exists MessageQueue
     ToId        int           not null,
     isRead      int default 0 null,
     isDelete    int default 0 null,
-    isRead      int default 0 null,
+    isReply     int default 0 null,
     SendTime    datetime      null
 )charset  = utf8mb4,engine = InnoDB;
 
@@ -213,3 +213,13 @@ create table MessageInfo
     MessageId      int          not null,
     MessageContent varchar(255) null
 )charset  = utf8mb4,engine = InnoDB;
+
+
+
+Insert Into Address Set AddressId = 0,Country = '空',City = '空',Address='空';
+Insert Into Address Set Country = 'China',City = 'Dalian',Address = 'Dalian HaiShi DaiXue';
+Insert Into Company Set CompanyName = 'Manager',CompanyType='管理员';
+Insert Into Account Set Account = 'admin',PassWord = 'admin',CompanyId = 1;
+Insert Into CompanyInfo Set CompanyId = 1,Phone = '1008611',AddressId = 2,Email = 'admin@qq.com';
+
+Select * From MessageQueue;

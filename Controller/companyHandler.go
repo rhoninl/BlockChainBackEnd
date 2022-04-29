@@ -63,6 +63,7 @@ func ReplyFriend(c *gin.Context) {
 		return
 	}
 	if reply.Ok {
+		Model.SendMessageTo(0, "对方通过了你的请求", messageInfo.ToId, messageInfo.FromId)
 		Model.PassReply(reply)
 	} else {
 		Model.SendMessageTo(0, "对方觉得你是个煞笔，所以拒绝了你的好友请求", messageInfo.ToId, messageInfo.FromId)
