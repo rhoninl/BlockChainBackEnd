@@ -128,3 +128,14 @@ type MessageInfo struct {
 	MessageType int64 `json:"messageType"`
 	IsReply     int64 `json:"isReply"`
 }
+
+type StuffInfo struct {
+	StuffId  int64  `json:"stuffId"`
+	Sex      string `json:"sex"`
+	Phone    string `json:"phone"`
+	Email    string `json:"email"`
+	Fax      string `json:"fax"`
+	JoinDate string `json:"joinDate"`
+	BirthDay string `json:"birthDay"`
+	AddressInfo
+}

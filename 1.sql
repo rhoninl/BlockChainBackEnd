@@ -185,7 +185,8 @@ CREATE TABLE CompanyInfo
 CREATE TABLE Relation
 (
     CompanyId      int NULL,
-    TargetCompanyId int NULL
+    TargetCompanyId int NULL,
+    isDelete int default 0
 )charset = utf8mb4,engine = MyISAM;
 
 CREATE TABLE Account
@@ -214,6 +215,17 @@ create table MessageInfo
     MessageContent varchar(255) null
 )charset  = utf8mb4,engine = InnoDB;
 
+Create Table StuffInfo
+(
+    StuffId   int not null,
+    JoinDate  char(30) default '1970-01-01', /*不能用 curdate() */
+    Sex       char(1)  default 'o',
+    Phone     char(20) default 'null',
+    Email     char(30) default 'null',
+    Fax       char(30) default 'null',
+    BirthDay  char(30) default '1970-01-01',
+    AddressId int      default 1
+)charset = utf8mb4,engine = MyISAM;
 
 
 Insert Into Address Set AddressId = 0,Country = '空',City = '空',Address='空';
@@ -223,3 +235,4 @@ Insert Into Account Set Account = 'admin',PassWord = 'admin',CompanyId = 1;
 Insert Into CompanyInfo Set CompanyId = 1,Phone = '1008611',AddressId = 2,Email = 'admin@qq.com';
 
 Select * From MessageQueue;
+

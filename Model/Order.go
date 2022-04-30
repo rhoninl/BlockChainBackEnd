@@ -10,7 +10,7 @@ func GetAllOrder(companyId int64) ([]Utils.Order, error) {
 	var orderInfos []Utils.Order
 	var orderInfo Utils.Order
 	var landTransportCompanyId, seaTransportCompanyId int64
-	template := `Select OrderId, StartDate, LandTransportCompanyId, SeaTransportCompanyId, OrderStatus From ShippingTraceability.Orders Where ClientCompanyId = ?`
+	template := `Select OrderId, StartDate, LandTransportCompanyId, SeaTransportCompanyId, OrderStatus From Orders Where ClientCompanyId = ?`
 	rows, err := Utils.DB().Query(template, companyId)
 	if err != nil {
 		log.Println("[GetAllOrder]数据库异常", err)
@@ -41,7 +41,7 @@ func RecordOrder(info Utils.OrderInfo) (int64, bool, error) {
 	}
 	info.OrderId, _ = rows.LastInsertId()
 	wg := sync.WaitGroup{}
-	template = `Insert Into ShippingTraceability.Cargo Set CargoName = ? , CargoModel = ? , Size = ? , CargoNum = ? , CategoryId = ? , Weight = ? `
+	template = `Insert Into Cargo Set CargoName = ? , CargoModel = ? , Size = ? , CargoNum = ? , CategoryId = ? , Weight = ? `
 	for _, item := range info.Cargos {
 		wg.Add(1)
 		rows, err := affair.Exec(template, item.CargoName, item.CargoModel, item.CargoSize, item.CargoNum, item.CategoryId, item.CargoWeight)
@@ -57,13 +57,13 @@ func RecordOrder(info Utils.OrderInfo) (int64, bool, error) {
 			wg.Done()
 		}(cargoId)
 	}
-	template = `Insert Into ShippingTraceability.Address Set Country = ?,City = ?,Address = ?`
+	template = `Insert Into Address Set Country = ?,City = ?,Address = ?`
 	rows, err = affair.Exec(template, info.SendAddress.Country, info.SendAddress.City, info.SendAddress.Address)
 	sendAddressId, _ := rows.LastInsertId()
 	rows, err = affair.Exec(template, info.ReceiveAddress.Country, info.ReceiveAddress.City, info.ReceiveAddress.Address)
 	receiveAddressId, _ := rows.LastInsertId()
 
-	template = `Insert Into ShippingTraceability.OrderInfo Set OrderId = ?,StartAddressId = ? ,EndAddressId = ? ,Phone= ?,Email = ?,Fax = ? , HopeReachDate = ? , INCOTERMS = ? , UnStackable = ? , Perishable =?,Dangerous = ? , Clearance = ? , Other = ?`
+	template = `Insert Into OrderInfo Set OrderId = ?,StartAddressId = ? ,EndAddressId = ? ,Phone= ?,Email = ?,Fax = ? , HopeReachDate = ? , INCOTERMS = ? , UnStackable = ? , Perishable =?,Dangerous = ? , Clearance = ? , Other = ?`
 	_, err = affair.Exec(template, info.OrderId, sendAddressId, receiveAddressId, info.Phone, info.Email, info.Fax, info.HopeReachDate, info.Incoterms, info.UnStackable, info.Perishable, info.Dangerous, info.Clearance, info.Other)
 	wg.Wait()
 	affair.Commit()

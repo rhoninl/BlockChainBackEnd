@@ -112,7 +112,7 @@ func GetAuth(c *gin.Context) {
 	}
 	var codeInfo Utils.AuthCode
 	codeInfo.Code = Utils.GenVerCode()
-	message := `<html><body style:"background:'https://gimg2.baidu.com/image_search/src=http%3A%2F%2Fbkimg.cdn.bcebos.com%2Fpic%2Fb3fb43166d224f4a20a4652df4a687529822720e7bc9&refer=http%3A%2F%2Fbkimg.cdn.bcebos.com&app=2002&size=f9999,10000&q=a80&n=0&g=0n&fmt=auto?sec=1653183161&t=51bbd5bef8fe26d143d2fd2a4a73abf3'"><a>您的验证码为</a><h3>` + codeInfo.Code + `</h3><a><br/>验证码有效期为1小时，请在1小时内完成验证<br/>如果不是您本人操作，请忽略本条邮件</a></body></html>`
+	message := `<html><body>您的验证码为<h3>` + codeInfo.Code + `</h3><br/>验证码有效期为1小时，请在1小时内完成验证<br/>如果不是您本人操作，请忽略本条邮件</body></html>`
 	if err := Utils.SendMessage(message, info.Email); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
@@ -128,8 +128,8 @@ func EditInfo(c *gin.Context) {
 	c.Bind(&companyInfo)
 	companyInfo.CompanyId = companyId.(int64)
 	try1 := Model.TryUpdateCompany(companyInfo.CompanyBasicInfo)
-	try2 := Model.TryUpdateCompanyInfo(companyInfo)
-	try3 := Model.TryUpdateAddress(companyInfo.AddressInfo, companyInfo.CompanyId)
+	addressId, try2 := Model.TryUpdateCompanyInfo(companyInfo)
+	try3 := Model.TryUpdateAddress(companyInfo.AddressInfo, companyInfo.CompanyId, addressId)
 	if try1 || try2 || try3 {
 		c.JSON(http.StatusOK, gin.H{"message": "修改成功"})
 		return

@@ -63,11 +63,14 @@ func main() {
 		stuff.GET("/getStuff", Controller.GetStuff)
 		stuff.POST("/addStuff", Controller.AddStuff)
 		stuff.GET("/fireStuff", Controller.DeleteStuff)
+		stuff.GET("/getStuffInfo", Controller.GetStuffInfo)
+		stuff.POST("/EditInfo", Controller.ChangeStuffInfo)
 	}
 	company := router.Group("/company", MiddleWare.Auth())
 	{
 		company.GET("/getJointVenture", Controller.GetJointVenture)
 		company.POST("/makeFriends", Controller.MakeFriend)
+		company.POST("/deleteFriends", Controller.DeleteFriend)
 	}
 	order := router.Group("/order", MiddleWare.Auth())
 	{

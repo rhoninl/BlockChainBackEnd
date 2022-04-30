@@ -24,11 +24,11 @@ func MakeFriend(c *gin.Context) {
 	c.Bind(&targetCompany)
 	thisCompany.CompanyId = fromCompanyId.(int64)
 	if thisCompany.CompanyId == targetCompany.CompanyId {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "自己跟自己建交，你这个人可真有意思"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "无法与自己建交"})
 		return
 	}
 	if !Model.CheckCompanyFriend(thisCompany.CompanyId, targetCompany.CompanyId) {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "都建交过了，还想咋建交，服了"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "已与该公司建交"})
 		return
 	}
 	thisCompany.CompanyName, thisCompany.CompanyType = Model.GetCompanyBasicInfo(thisCompany.CompanyId)
@@ -56,18 +56,39 @@ func ReplyFriend(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "出错了，请联系工作人员"})
 		return
 	} else if reply.CompanyId != messageInfo.ToId {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "不是你的消息，瞎点nm"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "该消息的接收帐号与当前帐号不匹配"})
 		return
 	} else if messageInfo.IsReply == 1 {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "消息回过了还回，是不是有点大病?"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "该消息已回复"})
 		return
 	}
 	if reply.Ok {
 		Model.SendMessageTo(0, "对方通过了你的请求", messageInfo.FromId, 0)
 		Model.PassReply(reply)
 	} else {
-		Model.SendMessageTo(0, "对方觉得你是个煞笔，所以拒绝了你的好友请求", messageInfo.FromId, 0)
+		Model.SendMessageTo(0, "很抱歉地通知您，对方拒绝了你的好友请求", messageInfo.FromId, 0)
 	}
 	go Model.SetReply(reply.MessageId)
+	c.JSON(http.StatusOK, nil)
+}
+
+func DeleteFriend(c *gin.Context) {
+	thisCompanyId, _ := c.Get("companyId")
+	var info Utils.CompanyBasicInfo
+	c.Bind(&info)
+	if thisCompanyId.(int64) == info.CompanyId {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "跟自己绝交"})
+		return
+	}
+	if !Model.CheckCompanyFriend(thisCompanyId.(int64), info.CompanyId) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "删除的公司尚未建交"})
+		return
+	}
+	if Model.DeleteCompanyFriend(thisCompanyId.(int64), info.CompanyId) != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
+		return
+	}
+	info, _ = Model.CompanyBasicInfo(info.CompanyId)
+	Model.SendMessageTo(0, "很抱歉通知您，您的好友"+info.CompanyName+"( id: "+strconv.FormatInt(info.CompanyId, 10)+" )把你给删了", info.CompanyId, 0)
 	c.JSON(http.StatusOK, nil)
 }

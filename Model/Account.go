@@ -12,7 +12,7 @@ import (
 
 func Login(account Utils.Account) (Utils.Account, bool, error) {
 	var info Utils.Account
-	template := `Select PassWord,CompanyId From ShippingTraceability.Account Where Account = ? limit 1`
+	template := `Select PassWord,CompanyId From Account Where Account = ? limit 1`
 	rows, err := Utils.DB().Query(template, account.Account)
 	if err != nil {
 		log.Println("[Login]make Mistake", err)
@@ -28,7 +28,7 @@ func Login(account Utils.Account) (Utils.Account, bool, error) {
 
 func Info(companyId int64) (Utils.CompanyInfo, bool, error) {
 	var info Utils.CompanyInfo
-	template := `Select Phone,AddressId, Email From ShippingTraceability.CompanyInfo Where CompanyId = ? limit 1`
+	template := `Select Phone,AddressId, Email From CompanyInfo Where CompanyId = ? limit 1`
 	rows, err := Utils.DB().Query(template, companyId)
 	if err != nil {
 		log.Println("[Info]数据库发生异常", err)
@@ -61,7 +61,7 @@ func Info(companyId int64) (Utils.CompanyInfo, bool, error) {
 
 func QueryAddress(addressId int64) (Utils.AddressInfo, error) {
 	var addressInfo Utils.AddressInfo
-	template := `Select Country, City, Address From ShippingTraceability.Address Where AddressId = ? Limit 1`
+	template := `Select Country, City, Address From Address Where AddressId = ? Limit 1`
 	rows, err := Utils.DB().Query(template, addressId)
 	if err != nil {
 		log.Println("[QueryAddress]数据库发生异常", err)
@@ -75,7 +75,7 @@ func QueryAddress(addressId int64) (Utils.AddressInfo, error) {
 
 func CompanyBasicInfo(companyId int64) (Utils.CompanyBasicInfo, error) {
 	var companyInfo Utils.CompanyBasicInfo
-	template := `Select CompanyName, CompanyType From ShippingTraceability.Company Where CompanyId = ? Limit 1`
+	template := `Select CompanyName, CompanyType From Company Where CompanyId = ? Limit 1`
 	rows, err := Utils.DB().Query(template, companyId)
 	if err != nil {
 		log.Println("[GetCompanyById]数据库发生异常", err)
@@ -106,7 +106,7 @@ func RegisterInfo(info Utils.RegisterInfo) (bool, error) {
 }
 
 func CheckAccountUnique(account string) bool {
-	template := `Select CompanyId From ShippingTraceability.Account Where Account = ? limit 1`
+	template := `Select CompanyId From Account Where Account = ? limit 1`
 	rows, err := Utils.DB().Query(template, account)
 	if err != nil {
 		log.Println("[CheckAccountUnique]数据库异常", err)
@@ -117,7 +117,7 @@ func CheckAccountUnique(account string) bool {
 }
 
 func CheckEmailUnique(email string) bool {
-	template := `Select CompanyId From ShippingTraceability.CompanyInfo Where Email = ? limit 1`
+	template := `Select CompanyId From CompanyInfo Where Email = ? limit 1`
 	rows, err := Utils.DB().Query(template, email)
 	if err != nil {
 		log.Println("[CheckAccountUnique]数据库异常", err)
@@ -156,38 +156,37 @@ func TryUpdateCompany(info Utils.CompanyBasicInfo) bool {
 	return num == 1
 }
 
-func TryUpdateCompanyInfo(info Utils.CompanyInfo) bool {
+//TryUpdateCompanyInfo return addressId,ok
+func TryUpdateCompanyInfo(info Utils.CompanyInfo) (int64, bool) {
 	template := `Select Phone, AddressId, Email From CompanyInfo Where CompanyId = ?`
 	rows, err := Utils.DB().Query(template, info.CompanyId)
 	if err != nil {
 		log.Println("[TryUpdateCompany]数据库异常", err)
-		return false
+		return 0, false
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		return false
+		return 0, false
 	}
 	var phone, email string
 	var addressId int64
 	rows.Scan(&phone, &addressId, &email)
 	fmt.Println(phone, addressId, email, info)
-	Utils.RDB().Set(string(info.CompanyId)+"addressId", addressId, time.Minute)
 	if info.Email == email && info.Phone == phone {
-		return false
+		return 0, false
 	}
 	template = `Update CompanyInfo Set Phone = ?,Email = ? Where CompanyId = ?`
 	result, err := Utils.DB().Exec(template, info.Phone, info.Email, info.CompanyId)
 	if err != nil {
 		log.Println("[TryUpdateCompany]数据库异常", err)
-		return false
+		return 0, false
 	}
 	num, _ := result.RowsAffected()
-	return num == 1
+	return addressId, num == 1
 }
 
-func TryUpdateAddress(info Utils.AddressInfo, id int64) bool {
-	addressId, _ := Utils.RDB().Get(string(id) + "#addressId").Result()
-	if addressId == "1" {
+func TryUpdateAddress(info Utils.AddressInfo, id int64, addressId int64) bool {
+	if addressId == 1 {
 		template := `Insert Into Address Set Country=?,City=?,Address=?`
 		result, err := Utils.DB().Exec(template, info.Country, info.City, info.Address)
 		if err != nil {

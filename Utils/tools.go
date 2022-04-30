@@ -29,7 +29,7 @@ func FormatString(i int, length int) string {
 	return result
 }
 
-//获取六位随机验证码
+//GenVerCode 获取六位随机验证码
 func GenVerCode() string {
 	result := ""
 	directory := `0123456789ABCDEFGHJKLMNPQRSTUVWXYZ`
