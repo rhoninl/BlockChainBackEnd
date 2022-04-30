@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"main/Utils"
+	"time"
 )
 
 func GetStuff(companyId int64) ([]Utils.Stuff, error) {
@@ -30,6 +31,8 @@ func InsertStuff(stuff Utils.Stuff, companyId int64) (int64, error) {
 		return 0, err
 	}
 	line, _ := rows.LastInsertId()
+	template = `Insert Into StuffInfo Set StuffId = ?,JoinDate = ?`
+	Utils.DB().Exec(template, line, time.Now().Unix())
 	return line, nil
 }
 
@@ -46,7 +49,7 @@ func CheckStuffCompany(stuffId, companyId int64) bool {
 }
 
 func DeleteStuff(stuffId int64) error {
-	template := `Update Staff Set isDelete = t Where StaffId = ? limit 1`
+	template := `Update Staff Set isDelete = 1 Where StaffId = ? limit 1`
 	_, err := Utils.DB().Exec(template, stuffId)
 	return err
 }
@@ -64,8 +67,10 @@ func GetStuffInfo(stuffId int64) (Utils.StuffInfo, int64, error) {
 		log.Println("[GetStuffInfo] Query data not exists")
 		return info, 0, fmt.Errorf("not Exists")
 	}
-	var addressId int64
-	rows.Scan(&info.JoinDate, &info.Sex, &info.Phone, &info.Email, &info.Fax, &info.BirthDay, &addressId)
+	var addressId, birthday, joinDate int64
+	rows.Scan(&joinDate, &info.Sex, &info.Phone, &info.Email, &info.Fax, &birthday, &addressId)
+	info.JoinDate = time.Unix(joinDate, 0).Format("2006-01-02")
+	info.BirthDay = time.Unix(birthday, 0).Format("2006-01-02")
 	template = `Select Country, City, Address From Address Where AddressId = ?`
 	rows, err = Utils.DB().Query(template, addressId)
 	if err != nil {
@@ -78,8 +83,13 @@ func GetStuffInfo(stuffId int64) (Utils.StuffInfo, int64, error) {
 }
 
 func UpdateStuffInfo(info Utils.StuffInfo) bool {
+	birthday, err := time.Parse("2006-01-02", info.BirthDay)
+	if err != nil {
+		log.Println("timestamp transform default")
+		return false
+	}
 	template := `Update StuffInfo Set Sex = ?,Phone = ?,Fax = ?,BirthDay = ?,Email = ? Where StuffId = ? limit 1`
-	result, err := Utils.DB().Exec(template, info.Sex, info.Phone, info.Fax, info.BirthDay, info.Email, info.StuffId)
+	result, err := Utils.DB().Exec(template, info.Sex, info.Phone, info.Fax, birthday.Unix(), info.Email, info.StuffId)
 	if err != nil {
 		log.Println("[UpdateStuffInfo] make a mistake ", err)
 		return false
