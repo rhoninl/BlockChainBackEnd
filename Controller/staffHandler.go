@@ -51,7 +51,7 @@ func DeleteStaff(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
-	c.JSON(888, nil)
+	c.JSON(http.StatusOK, nil)
 }
 func GetStaffInfo(c *gin.Context) {
 	iCompanyId, _ := c.Get("companyId")

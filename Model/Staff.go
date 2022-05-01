@@ -8,7 +8,7 @@ import (
 )
 
 func GetStaff(companyId int64) ([]Utils.Staff, error) {
-	template := `Select StaffId, StaffName, StaffJob From Staff Where CompanyId = ?`
+	template := `Select StaffId, StaffName, StaffJob From Staff Where CompanyId = ? And isDelete = 0`
 	rows, err := Utils.DB().Query(template, companyId)
 	if err != nil {
 		log.Println("[GetStaff]", err)
