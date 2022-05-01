@@ -42,7 +42,7 @@ func Login(c *gin.Context) {
 		HttpOnly: false,
 		SameSite: 4,
 	})
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusCreated, nil)
 }
 
 func LogOut(c *gin.Context) {
@@ -82,7 +82,7 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "ok"})
+	c.JSON(http.StatusCreated, nil)
 }
 
 func Info(c *gin.Context) {
@@ -119,7 +119,7 @@ func GetAuth(c *gin.Context) {
 	}
 	codeInfo.ToEmail = info.Email
 	Utils.AuthCodeRegister(codeInfo)
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusCreated, nil)
 }
 
 func EditInfo(c *gin.Context) {
@@ -131,10 +131,10 @@ func EditInfo(c *gin.Context) {
 	addressId, try2 := Model.TryUpdateCompanyInfo(companyInfo)
 	try3 := Model.TryUpdateAddress(companyInfo.AddressInfo, companyInfo.CompanyId, addressId)
 	if try1 || try2 || try3 {
-		c.JSON(http.StatusOK, gin.H{"message": "修改成功"})
+		c.JSON(http.StatusCreated, gin.H{"message": "修改成功"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"message": "未做出修改"})
+	c.JSON(http.StatusNotModified, gin.H{"message": "未做出修改"})
 }
 
 func ForgetPassword(c *gin.Context) {
@@ -151,7 +151,7 @@ func ForgetPassword(c *gin.Context) {
 	}
 	message := `<html><body>您的新密码为<h3>` + newPassword + `</h3><br/>登陆后请及时修改<br/></body></html>`
 	Utils.SendMessage(message, form.Email)
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusCreated, nil)
 }
 
 func ChangePassword(c *gin.Context) {
@@ -173,5 +173,5 @@ func ChangePassword(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusCreated, nil)
 }

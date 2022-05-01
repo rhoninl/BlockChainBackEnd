@@ -103,7 +103,7 @@ type Message struct {
 type MessageList struct {
 	MessageId   int64  `json:"messageId"`
 	CompanyName string `json:"companyName"`
-	MessageType string `json:"messageType"`
+	MessageType int64  `json:"messageType"`
 	SendTime    string `json:"sendTime"`
 	IsRead      int    `json:"isRead"`
 	IsReply     int    `json:"isReply"`
@@ -138,4 +138,10 @@ type StuffInfo struct {
 	JoinDate string `json:"joinDate"`
 	BirthDay string `json:"birthDay"`
 	AddressInfo
+}
+
+type MessageStruct struct {
+	Message
+	FromId int64 `json:"fromId"`
+	ToId   int64 `json:"toId"`
 }

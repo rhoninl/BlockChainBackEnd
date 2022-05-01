@@ -71,11 +71,13 @@ func main() {
 		company.GET("/getJointVenture", Controller.GetJointVenture)
 		company.POST("/makeFriends", Controller.MakeFriend)
 		company.POST("/deleteFriends", Controller.DeleteFriend)
+		company.GET("/getFriendsInfo", Controller.GetFriendsInfo)
+		company.POST("/sendMessage", Controller.SendMessageToFriends)
 	}
 	order := router.Group("/order", MiddleWare.Auth())
 	{
 		order.GET("/getAllOrder", Controller.GetAllOrder)
-		order.POST("/submitOrder", Controller.BindForm)
+		order.POST("/submitOrder", Controller.BindOrder)
 	}
 	message := router.Group("/message", MiddleWare.Auth())
 	{

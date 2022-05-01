@@ -32,7 +32,7 @@ func AddStuff(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "该员工已存在"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"stuffId": id})
+	c.JSON(http.StatusCreated, gin.H{"stuffId": id})
 }
 
 func DeleteStuff(c *gin.Context) {
@@ -90,7 +90,7 @@ func ChangeStuffInfo(c *gin.Context) {
 		return
 	}
 	if reflect.DeepEqual(oldInfo, Info) {
-		c.JSON(http.StatusOK, gin.H{"message": "信息没有改变"})
+		c.JSON(http.StatusNotModified, gin.H{"message": "信息没有改变"})
 		return
 	}
 	if addressId == 0 || !reflect.DeepEqual(oldInfo.AddressInfo, info.AddressInfo) && !Model.UpdateStuffAddressInfo(info.AddressInfo, addressId, info.StuffId) {
@@ -104,5 +104,5 @@ func ChangeStuffInfo(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
-	c.JSON(http.StatusOK, nil)
+	c.JSON(http.StatusCreated, nil)
 }

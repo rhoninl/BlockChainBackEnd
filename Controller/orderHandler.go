@@ -17,7 +17,7 @@ func GetAllOrder(c *gin.Context) {
 	c.JSON(http.StatusOK, orderInfo)
 }
 
-func BindForm(c *gin.Context) {
+func BindOrder(c *gin.Context) {
 	var orders Utils.OrderInfo
 	c.Bind(&orders)
 	companyId, _ := c.Get("companyId")
@@ -31,5 +31,5 @@ func BindForm(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "请求异常"})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"orderId": id})
+	c.JSON(http.StatusCreated, gin.H{"orderId": id})
 }
