@@ -10,21 +10,21 @@ import (
 	"strconv"
 )
 
-func GetStuff(c *gin.Context) {
+func GetStaff(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
-	stuffs, err := Model.GetStuff(companyId.(int64))
+	staffs, err := Model.GetStaff(companyId.(int64))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
-	c.JSON(http.StatusOK, stuffs)
+	c.JSON(http.StatusOK, staffs)
 }
 
-func AddStuff(c *gin.Context) {
+func AddStaff(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
-	var stuffInfo Utils.Stuff
-	c.BindJSON(&stuffInfo)
-	id, err := Model.InsertStuff(stuffInfo, companyId.(int64))
+	var staffInfo Utils.Staff
+	c.BindJSON(&staffInfo)
+	id, err := Model.InsertStaff(staffInfo, companyId.(int64))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
@@ -32,59 +32,59 @@ func AddStuff(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "该员工已存在"})
 		return
 	}
-	c.JSON(http.StatusCreated, gin.H{"stuffId": id})
+	c.JSON(http.StatusCreated, gin.H{"staffId": id})
 }
 
-func DeleteStuff(c *gin.Context) {
+func DeleteStaff(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
-	stuffId := c.Query("id")
-	iStuffId, err := strconv.ParseInt(stuffId, 10, 64)
+	staffId := c.Query("id")
+	iStaffId, err := strconv.ParseInt(staffId, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "请求错误"})
 		return
 	}
-	if !Model.CheckStuffCompany(iStuffId, companyId.(int64)) {
+	if !Model.CheckStaffCompany(iStaffId, companyId.(int64)) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "该员工不属于当前帐号"})
 		return
 	}
-	if Model.DeleteStuff(iStuffId) != nil {
+	if Model.DeleteStaff(iStaffId) != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
 	c.JSON(888, nil)
 }
-func GetStuffInfo(c *gin.Context) {
+func GetStaffInfo(c *gin.Context) {
 	iCompanyId, _ := c.Get("companyId")
 	companyId := iCompanyId.(int64)
-	sStuffId := c.Query("stuffId")
-	stuffId, err := strconv.ParseInt(sStuffId, 10, 64)
-	if err != nil || stuffId == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "请求参数异常", "Query": stuffId})
+	sStaffId := c.Query("staffId")
+	staffId, err := strconv.ParseInt(sStaffId, 10, 64)
+	if err != nil || staffId == 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "请求参数异常", "Query": staffId})
 		return
 	}
-	if !Model.CheckStuffCompany(stuffId, companyId) {
+	if !Model.CheckStaffCompany(staffId, companyId) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "该员工不属于当前帐号"})
 		return
 	}
-	info, _, err := Model.GetStuffInfo(stuffId)
+	info, _, err := Model.GetStaffInfo(staffId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
-	info.StuffId = stuffId
+	info.StaffId = staffId
 	c.JSON(http.StatusOK, info)
 }
 
-func ChangeStuffInfo(c *gin.Context) {
+func ChangeStaffInfo(c *gin.Context) {
 	iCompanyId, _ := c.Get("companyId")
 	companyId := iCompanyId.(int64)
-	var info Utils.StuffInfo
+	var info Utils.StaffInfo
 	c.Bind(&info)
-	if !Model.CheckStuffCompany(info.StuffId, companyId) {
+	if !Model.CheckStaffCompany(info.StaffId, companyId) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "该员工不属于当前帐号"})
 		return
 	}
-	oldInfo, addressId, err := Model.GetStuffInfo(info.StuffId)
+	oldInfo, addressId, err := Model.GetStaffInfo(info.StaffId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
@@ -93,14 +93,14 @@ func ChangeStuffInfo(c *gin.Context) {
 		c.JSON(http.StatusNotModified, gin.H{"message": "信息没有改变"})
 		return
 	}
-	if addressId == 0 || !reflect.DeepEqual(oldInfo.AddressInfo, info.AddressInfo) && !Model.UpdateStuffAddressInfo(info.AddressInfo, addressId, info.StuffId) {
+	if addressId == 0 || !reflect.DeepEqual(oldInfo.AddressInfo, info.AddressInfo) && !Model.UpdateStaffAddressInfo(info.AddressInfo, addressId, info.StaffId) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
 	oldInfo.AddressInfo = info.AddressInfo
-	oldInfo.StuffId = info.StuffId
+	oldInfo.StaffId = info.StaffId
 	oldInfo.JoinDate = ""
-	if !reflect.DeepEqual(oldInfo, info) && !Model.UpdateStuffInfo(info) {
+	if !reflect.DeepEqual(oldInfo, info) && !Model.UpdateStaffInfo(info) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}

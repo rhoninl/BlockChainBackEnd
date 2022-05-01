@@ -7,38 +7,38 @@ import (
 	"time"
 )
 
-func GetStuff(companyId int64) ([]Utils.Stuff, error) {
+func GetStaff(companyId int64) ([]Utils.Staff, error) {
 	template := `Select StaffId, StaffName, StaffJob From Staff Where CompanyId = ?`
 	rows, err := Utils.DB().Query(template, companyId)
 	if err != nil {
-		log.Println("[GetStuff]", err)
+		log.Println("[GetStaff]", err)
 		return nil, err
 	}
 	defer rows.Close()
-	var stuffs []Utils.Stuff
-	var stuff Utils.Stuff
+	var staffs []Utils.Staff
+	var staff Utils.Staff
 	for rows.Next() {
-		rows.Scan(&stuff.StuffId, &stuff.StuffName, &stuff.StuffJob)
-		stuffs = append(stuffs, stuff)
+		rows.Scan(&staff.StaffId, &staff.StaffName, &staff.StaffJob)
+		staffs = append(staffs, staff)
 	}
-	return stuffs, nil
+	return staffs, nil
 }
 
-func InsertStuff(stuff Utils.Stuff, companyId int64) (int64, error) {
+func InsertStaff(staff Utils.Staff, companyId int64) (int64, error) {
 	template := `Insert Into Staff Set StaffName = ?,StaffJob = ?,CompanyId = ?`
-	rows, err := Utils.DB().Exec(template, stuff.StuffName, stuff.StuffJob, companyId)
+	rows, err := Utils.DB().Exec(template, staff.StaffName, staff.StaffJob, companyId)
 	if err != nil {
 		return 0, err
 	}
 	line, _ := rows.LastInsertId()
-	template = `Insert Into StuffInfo Set StuffId = ?,JoinDate = ?`
+	template = `Insert Into StaffInfo Set StaffId = ?,JoinDate = ?`
 	Utils.DB().Exec(template, line, time.Now().Unix())
 	return line, nil
 }
 
-func CheckStuffCompany(stuffId, companyId int64) bool {
+func CheckStaffCompany(staffId, companyId int64) bool {
 	template := `Select CompanyId From Staff Where StaffId = ?`
-	rows, err := Utils.DB().Query(template, stuffId)
+	rows, err := Utils.DB().Query(template, staffId)
 	if err != nil || !rows.Next() {
 		return false
 	}
@@ -48,23 +48,23 @@ func CheckStuffCompany(stuffId, companyId int64) bool {
 	return sCompanyId == companyId
 }
 
-func DeleteStuff(stuffId int64) error {
+func DeleteStaff(staffId int64) error {
 	template := `Update Staff Set isDelete = 1 Where StaffId = ? limit 1`
-	_, err := Utils.DB().Exec(template, stuffId)
+	_, err := Utils.DB().Exec(template, staffId)
 	return err
 }
 
-func GetStuffInfo(stuffId int64) (Utils.StuffInfo, int64, error) {
-	var info Utils.StuffInfo
-	template := `Select JoinDate, Sex, Phone, Email, Fax, BirthDay, AddressId From StuffInfo Where StuffId = ?`
-	rows, err := Utils.DB().Query(template, stuffId)
+func GetStaffInfo(staffId int64) (Utils.StaffInfo, int64, error) {
+	var info Utils.StaffInfo
+	template := `Select JoinDate, Sex, Phone, Email, Fax, BirthDay, AddressId From StaffInfo Where StaffId = ?`
+	rows, err := Utils.DB().Query(template, staffId)
 	if err != nil {
-		log.Println("[GetStuffInfo] make a mistake ", err)
+		log.Println("[GetStaffInfo] make a mistake ", err)
 		return info, 0, err
 	}
 	defer rows.Close()
 	if !rows.Next() {
-		log.Println("[GetStuffInfo] Query data not exists")
+		log.Println("[GetStaffInfo] Query data not exists")
 		return info, 0, fmt.Errorf("not Exists")
 	}
 	var addressId, birthday, joinDate int64
@@ -82,28 +82,28 @@ func GetStuffInfo(stuffId int64) (Utils.StuffInfo, int64, error) {
 	return info, addressId, nil
 }
 
-func UpdateStuffInfo(info Utils.StuffInfo) bool {
+func UpdateStaffInfo(info Utils.StaffInfo) bool {
 	birthday, err := time.Parse("2006-01-02", info.BirthDay)
 	if err != nil {
 		log.Println("timestamp transform default")
 		return false
 	}
-	template := `Update StuffInfo Set Sex = ?,Phone = ?,Fax = ?,BirthDay = ?,Email = ? Where StuffId = ? limit 1`
-	result, err := Utils.DB().Exec(template, info.Sex, info.Phone, info.Fax, birthday.Unix(), info.Email, info.StuffId)
+	template := `Update StaffInfo Set Sex = ?,Phone = ?,Fax = ?,BirthDay = ?,Email = ? Where StaffId = ? limit 1`
+	result, err := Utils.DB().Exec(template, info.Sex, info.Phone, info.Fax, birthday.Unix(), info.Email, info.StaffId)
 	if err != nil {
-		log.Println("[UpdateStuffInfo] make a mistake ", err)
+		log.Println("[UpdateStaffInfo] make a mistake ", err)
 		return false
 	}
 	num, err := result.RowsAffected()
 	return num == 1
 }
 
-func UpdateStuffAddressInfo(info Utils.AddressInfo, addressId int64, stuffId int64) bool {
+func UpdateStaffAddressInfo(info Utils.AddressInfo, addressId int64, staffId int64) bool {
 	if addressId != 1 {
 		template := `Update Address Set Country = ?,City = ?,Address = ? Where AddressId = ? limit 1`
 		result, err := Utils.DB().Exec(template, info.Country, info.City, info.Address, addressId)
 		if err != nil {
-			log.Println("[UpdateStuffAddressInfo] make a mistake ", err)
+			log.Println("[UpdateStaffAddressInfo] make a mistake ", err)
 			return false
 		}
 		num, _ := result.RowsAffected()
@@ -116,8 +116,8 @@ func UpdateStuffAddressInfo(info Utils.AddressInfo, addressId int64, stuffId int
 		return false
 	}
 	addressId, _ = result.LastInsertId()
-	template = `Update StuffInfo Set AddressId = ? Where StuffId = ? limit 1`
-	result, err = Utils.DB().Exec(template, addressId, stuffId)
+	template = `Update StaffInfo Set AddressId = ? Where StaffId = ? limit 1`
+	result, err = Utils.DB().Exec(template, addressId, staffId)
 	if err != nil {
 		log.Println("[UpdateAddressInfo] make a mistake ", err)
 		return false

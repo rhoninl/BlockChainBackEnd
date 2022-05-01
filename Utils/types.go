@@ -20,10 +20,10 @@ type AddressInfo struct {
 	Address string `json:"address"`
 }
 
-type Stuff struct {
-	StuffId   int64  `json:"stuffId"`
-	StuffName string `json:"stuffName"`
-	StuffJob  string `json:"stuffJob"`
+type Staff struct {
+	StaffId   int64  `json:"staffId"`
+	StaffName string `json:"staffName"`
+	StaffJob  string `json:"staffJob"`
 }
 
 type CompanyBasicInfo struct {
@@ -129,8 +129,8 @@ type MessageInfo struct {
 	IsReply     int64 `json:"isReply"`
 }
 
-type StuffInfo struct {
-	StuffId  int64  `json:"stuffId"`
+type StaffInfo struct {
+	StaffId  int64  `json:"staffId"`
 	Sex      string `json:"sex"`
 	Phone    string `json:"phone"`
 	Email    string `json:"email"`

@@ -58,13 +58,13 @@ func main() {
 		account.POST("/Forget", Controller.ForgetPassword)
 		account.POST("/ChangePd", MiddleWare.Auth(), Controller.ChangePassword)
 	}
-	stuff := router.Group("/stuff", MiddleWare.Auth())
+	staff := router.Group("/staff", MiddleWare.Auth())
 	{
-		stuff.GET("/getStuff", Controller.GetStuff)
-		stuff.POST("/addStuff", Controller.AddStuff)
-		stuff.GET("/fireStuff", Controller.DeleteStuff)
-		stuff.GET("/getStuffInfo", Controller.GetStuffInfo)
-		stuff.POST("/EditInfo", Controller.ChangeStuffInfo)
+		staff.GET("/getStaff", Controller.GetStaff)
+		staff.POST("/addStaff", Controller.AddStaff)
+		staff.GET("/fireStaff", Controller.DeleteStaff)
+		staff.GET("/getStaffInfo", Controller.GetStaffInfo)
+		staff.POST("/EditInfo", Controller.ChangeStaffInfo)
 	}
 	company := router.Group("/company", MiddleWare.Auth())
 	{
