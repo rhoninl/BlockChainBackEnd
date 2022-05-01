@@ -275,9 +275,6 @@ func ChangePassword(account interface{}, password string) bool {
 
 //GetCompanyBasicInfo 通过Id获取企业的类型以及名称 (name,type)
 func GetCompanyBasicInfo(companyId int64) (string, string) {
-	if companyId == 0 {
-		return "", ""
-	}
 	aCompanyId := strconv.FormatInt(companyId, 10)
 	companyName, err := Utils.RDB().Get(aCompanyId + "#Companyname").Result()
 	companyType, err := Utils.RDB().Get(aCompanyId + "#Companytype").Result()
