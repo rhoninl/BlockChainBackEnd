@@ -260,4 +260,3 @@ Set CompanyId = 1,
 
 Select *
 From MessageQueue;
-

@@ -84,3 +84,14 @@ func DeleteCompanyFriend(company1, company2 int64) error {
 	_, err := Utils.DB().Exec(template, company1, company2)
 	return err
 }
+
+func CheckMakeFriendMessage(fromId, toId int64) bool {
+	template := `Select MessageId From MessageQueue Where isReply = 0 And FromId = ? And ToId = ? And MessageType = 1`
+	rows, err := Utils.DB().Query(template, fromId, toId)
+	if err != nil {
+		log.Println("[CheckMakeFriendMessage] make a mistake", err)
+		return false
+	}
+	defer rows.Close()
+	return rows.Next()
+}

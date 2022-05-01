@@ -28,8 +28,12 @@ func MakeFriend(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "无法与自己建交"})
 		return
 	}
-	if !Model.CheckCompanyFriend(thisCompany.CompanyId, targetCompany.CompanyId) {
+	if Model.CheckCompanyFriend(thisCompany.CompanyId, targetCompany.CompanyId) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "已与该公司建交"})
+		return
+	}
+	if Model.CheckMakeFriendMessage(thisCompany.CompanyId, targetCompany.CompanyId) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "请求已经发过了，请耐心等待对方回应"})
 		return
 	}
 	thisCompany.CompanyName, thisCompany.CompanyType = Model.GetCompanyBasicInfo(thisCompany.CompanyId)
