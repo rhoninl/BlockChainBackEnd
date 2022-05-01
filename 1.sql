@@ -260,3 +260,4 @@ Set CompanyId = 1,
 
 Select *
 From MessageQueue;
+Update MessageQueue Set isReply = 1;

@@ -42,7 +42,7 @@ func PassReply(reply Utils.ReplyFriend) bool {
 		aCompanyId, bCompanyId = bCompanyId, aCompanyId
 	}
 	template = `Select CompanyId From Relation WHere CompanyId = ? And TargetCompanyId = ? And isDelete = 1 Limit 1`
-	rows, err = Utils.DB().Query(template, fromId, reply.CompanyId)
+	rows, err = Utils.DB().Query(template, aCompanyId, bCompanyId)
 	if err != nil {
 		log.Println("[PassReply] make a mistake", err)
 		return false
@@ -51,7 +51,7 @@ func PassReply(reply Utils.ReplyFriend) bool {
 	if !rows.Next() {
 		template = `Insert Into Relation Set CompanyId = ?,TargetCompanyId = ?`
 	} else {
-		template = `Update Relation Set isDelete = 1 Where CompanyId = ? And TargetCompanyId = ?`
+		template = `Update Relation Set isDelete = 0 Where CompanyId = ? And TargetCompanyId = ?`
 	}
 	result, err := Utils.DB().Exec(template, aCompanyId, bCompanyId)
 	if err != nil {

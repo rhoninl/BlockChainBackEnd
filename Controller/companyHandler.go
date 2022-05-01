@@ -67,11 +67,15 @@ func ReplyFriend(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "该消息已回复"})
 		return
 	}
+	if Model.CheckCompanyFriend(companyId.(int64), messageInfo.FromId) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "已经是朋友了好吧"})
+	}
+	companyName, _ := Model.GetCompanyBasicInfo(messageInfo.ToId)
 	if reply.Ok {
-		Model.SendMessageTo(0, "对方通过了你的请求", messageInfo.FromId, 0)
+		Model.SendMessageTo(0, companyName+"( id :"+strconv.FormatInt(messageInfo.ToId, 10)+")通过了你的请求", messageInfo.FromId, 0)
 		Model.PassReply(reply)
 	} else {
-		Model.SendMessageTo(0, "很抱歉地通知您，对方拒绝了你的好友请求", messageInfo.FromId, 0)
+		Model.SendMessageTo(0, "很抱歉地通知您，<"+companyName+">( id :"+strconv.FormatInt(messageInfo.ToId, 10)+")拒绝了你的好友请求", messageInfo.FromId, 0)
 	}
 	go Model.SetReply(reply.MessageId)
 	c.JSON(http.StatusCreated, nil)
@@ -94,7 +98,7 @@ func DeleteFriend(c *gin.Context) {
 		return
 	}
 	info, _ = Model.CompanyBasicInfo(info.CompanyId)
-	Model.SendMessageTo(0, "很抱歉通知您，您的好友"+info.CompanyName+"( id: "+strconv.FormatInt(info.CompanyId, 10)+" )把你给删了", info.CompanyId, 0)
+	Model.SendMessageTo(0, "很抱歉通知您，您的好友<"+info.CompanyName+">( id: "+strconv.FormatInt(info.CompanyId, 10)+" )把你给删了", info.CompanyId, 0)
 	c.JSON(http.StatusCreated, nil)
 }
 
