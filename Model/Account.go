@@ -84,6 +84,7 @@ func CompanyBasicInfo(companyId int64) (Utils.CompanyBasicInfo, error) {
 	defer rows.Close()
 	rows.Next()
 	rows.Scan(&companyInfo.CompanyName, &companyInfo.CompanyType)
+	companyInfo.CompanyId = companyId
 	return companyInfo, nil
 }
 
