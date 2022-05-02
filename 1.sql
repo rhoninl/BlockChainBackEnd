@@ -19,19 +19,11 @@ CREATE TABLE Cargo
     CargoName  varchar(50) NOT NULL,
     CargoModel varchar(30) NOT NULL,
     CargoNum   integer     NOT NULL,
-    CategoryId int         NOT NULL,
-    Price      float       NULL,
+    Category   varchar(30) NOT NULL,
     Weight     float       NULL,
-    Size       varchar(50) NULL,
+    CargoSize  varchar(50) NULL,
     PRIMARY KEY (CargoId)
 ) charset = utf8mb4;
-
-CREATE TABLE Categories
-(
-    CategoryId   int auto_increment,
-    CategoryName varchar(50) NOT NULL,
-    PRIMARY KEY (CategoryId)
-) charset = utf8mb4, engine = MyISAM;
 
 CREATE TABLE Company
 (

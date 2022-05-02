@@ -82,7 +82,7 @@ type Cargo struct {
 	CargoModel  string  `json:"cargoModel"`
 	CargoSize   string  `json:"cargoSize"`
 	CargoNum    int64   `json:"cargoNum"`
-	CategoryId  int64   `json:"categoryId"`
+	Category    string  `json:"category"`
 	CargoWeight float64 `json:"cargoWeight"`
 }
 
@@ -155,4 +155,7 @@ type Bargain struct {
 	Price  int64 `json:"price"`
 	Status int64 `json:"status"`
 	CompanyBasicInfo
+}
+
+type ReplyBargain struct {
 }

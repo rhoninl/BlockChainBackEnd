@@ -63,6 +63,10 @@ func GetAllBargain(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "请求错误"})
 		return
 	}
+	if !Model.CheckOrderCompany(orderId, companyId.(int64)) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "该订单不属于当前公司"})
+		return
+	}
 	info, err := Model.GetCompanyBargain(orderId, companyId.(int64))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
@@ -70,6 +74,28 @@ func GetAllBargain(c *gin.Context) {
 	}
 	for n, item := range info {
 		info[n].CompanyName, info[n].CompanyType = Model.GetCompanyBasicInfo(item.CompanyId)
+	}
+	c.JSON(http.StatusOK, info)
+}
+
+//func BargainReply(c *gin.Context) {
+//	companyId, _ := c.Get("companyId")
+//	c.Bind()
+//	Model.CheckMessageAuth()
+//	c.JSON(http.StatusCreated, nil)
+//}
+
+func GetOrderInfo(c *gin.Context) {
+	sOrderId := c.Query("orderId")
+	orderId, err := strconv.ParseInt(sOrderId, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "请求异常"})
+		return
+	}
+	info, err := Model.GetOrderInfo(orderId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
+		return
 	}
 	c.JSON(http.StatusOK, info)
 }
