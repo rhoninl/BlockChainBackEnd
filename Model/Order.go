@@ -69,3 +69,35 @@ func RecordOrder(info Utils.OrderInfo) (int64, bool, error) {
 	affair.Commit()
 	return info.OrderId, true, nil
 }
+
+func CheckOrderCompany(orderId, companyId int64) bool {
+	template := `Select ClientCompanyId From Orders Where OrderId = ?`
+	rows, err := Utils.DB().Query(template, orderId)
+	if err != nil || !rows.Next() {
+		log.Println("[CheckOrderCompany] make a mistake", err)
+		return false
+	}
+	var id int64
+	rows.Scan(&id)
+	return id == companyId
+}
+
+func GetCompanyBargain(orderId, companyId int64) ([]Utils.Bargain, error) {
+	template := `Select B.CompanyId,COALESCE(Price,0),COALESCE(isPass,-1) From 
+	(Select * From Bargain Where OrderId = ?) A Right Join (
+		Select TargetCompanyId as companyId From Relation Where CompanyId = ? And isDelete = 0
+		UNION
+		Select CompanyId as companyId From Relation Where TargetCompanyId = ? And isDelete = 0
+	) B On A.CompanyId = B.companyId`
+	rows, err := Utils.DB().Query(template, orderId, companyId, companyId)
+	if err != nil {
+		return nil, err
+	}
+	var bargains []Utils.Bargain
+	var bargain Utils.Bargain
+	for rows.Next() {
+		rows.Scan(&bargain.CompanyId, &bargain.Price, &bargain.Status)
+		bargains = append(bargains, bargain)
+	}
+	return bargains, nil
+}

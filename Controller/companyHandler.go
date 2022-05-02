@@ -98,7 +98,7 @@ func DeleteFriend(c *gin.Context) {
 		return
 	}
 	info, _ = Model.CompanyBasicInfo(info.CompanyId)
-	Model.SendMessageTo(0, "很抱歉通知您，您的好友<"+info.CompanyName+">( id: "+strconv.FormatInt(info.CompanyId, 10)+" )把你给删了", info.CompanyId, 0)
+	go Model.SendMessageTo(0, "很抱歉通知您，您的好友<"+info.CompanyName+">( id: "+strconv.FormatInt(info.CompanyId, 10)+" )把你给删了", info.CompanyId, 0)
 	c.JSON(http.StatusCreated, nil)
 }
 
@@ -133,9 +133,8 @@ func SendMessageToFriends(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "当前公司与你尚未建交"})
 		return
 	}
-	if Model.SendMessageTo(2, info.Context, info.ToId, companyId.(int64)) {
-		c.JSON(http.StatusCreated, nil)
-	} else {
+	if !Model.SendMessageTo(2, info.Context, info.ToId, companyId.(int64)) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "消息未发送"})
 	}
+	c.JSON(http.StatusCreated, nil)
 }

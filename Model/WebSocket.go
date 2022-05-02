@@ -95,6 +95,7 @@ func (c *Client) HeartBeat() {
 		}
 		wg.Wait() //等待所有协程结束
 		runtime.GC()
+		log.Println("Now GoRuntime Num is ", runtime.NumGoroutine())
 	}
 	close(ch)
 }

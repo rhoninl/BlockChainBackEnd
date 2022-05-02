@@ -145,3 +145,14 @@ type MessageStruct struct {
 	FromId int64 `json:"fromId"`
 	ToId   int64 `json:"toId"`
 }
+
+type AskPrice struct {
+	TargetCompanyId int64 `json:"toCompanyId"`
+	OrderId         int64 `json:"orderId"`
+}
+
+type Bargain struct {
+	Price  int64 `json:"price"`
+	Status int64 `json:"status"`
+	CompanyBasicInfo
+}

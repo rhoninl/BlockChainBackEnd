@@ -170,7 +170,8 @@ CREATE TABLE Bargain
     OrderId   int         NOT NULL,
     CompanyId int         Not NULL,
     Price     varchar(30) NULL,
-    Time      datetime    NULL,
+    ReplyTime datetime    NULL,
+    isPass    int default -1,
     PRIMARY KEY (OrderId, CompanyId)
 ) charset = utf8mb4;
 

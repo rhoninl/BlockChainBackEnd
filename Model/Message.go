@@ -7,8 +7,21 @@ import (
 	"main/Utils"
 )
 
-func SendMessageTo(messageType int, message string, toId int64, fromId int64) bool {
-	go UseClient().SendMessageToId(gin.H{"message": "有一条新消息", "messageType": 1}, toId)
+func SendMessageTo(messageType int, message interface{}, toId int64, fromId int64) bool {
+	text := ``
+	switch messageType {
+	case 0:
+		text = `您有一条系统消息`
+	case 1:
+		text = `您有一条好友邀请`
+	case 2:
+		text = `您有一条好友消息`
+	case 3:
+		text = `您有一条新报价请求`
+	default:
+		text = `出错了，请联系工作人员`
+	}
+	go UseClient().SendMessageToId(gin.H{"message": text, "messageType": messageType}, toId)
 	template := `Insert Into MessageQueue Set MessageType = ? , FromId = ?,ToId = ?,SendTime=now()`
 	result, err := Utils.DB().Exec(template, messageType, fromId, toId)
 	if err != nil {
