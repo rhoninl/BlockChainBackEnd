@@ -47,11 +47,11 @@ func AskForPrice(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "尚未与目标公司建交"})
 		return
 	}
-	text := `123`
-	if !Model.SendMessageTo(3, text, info.TargetCompanyId, companyId.(int64)) {
+	if !Model.SendMessageTo(3, info.OrderId, info.TargetCompanyId, companyId.(int64)) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "消息发送失败"})
 		return
 	}
+	Model.AskFroBargain(companyId.(int64), info.OrderId)
 	c.JSON(http.StatusCreated, nil)
 }
 
@@ -78,12 +78,14 @@ func GetAllBargain(c *gin.Context) {
 	c.JSON(http.StatusOK, info)
 }
 
-//func BargainReply(c *gin.Context) {
-//	companyId, _ := c.Get("companyId")
-//	c.Bind()
-//	Model.CheckMessageAuth()
-//	c.JSON(http.StatusCreated, nil)
-//}
+func ReplyBargain(c *gin.Context) {
+	companyId, _ := c.Get("companyId")
+	var info Utils.ReplyBargain
+	c.Bind(&info)
+	Model.ReplyBargain(info, companyId.(int64))
+	go Model.SendMessageTo(4, info.Bargain, 2, companyId.(int64))
+	c.JSON(http.StatusCreated, nil)
+}
 
 func GetOrderInfo(c *gin.Context) {
 	sOrderId := c.Query("orderId")

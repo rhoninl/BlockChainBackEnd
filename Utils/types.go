@@ -158,4 +158,7 @@ type Bargain struct {
 }
 
 type ReplyBargain struct {
+	IsPass  bool  `json:"isRefuse"`
+	Bargain int64 `json:"bargain"`
+	OrderId int64 `json:"orderId"`
 }

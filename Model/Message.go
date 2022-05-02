@@ -25,14 +25,14 @@ func SendMessageTo(messageType int, message interface{}, toId int64, fromId int6
 	template := `Insert Into MessageQueue Set MessageType = ? , FromId = ?,ToId = ?,SendTime=now()`
 	result, err := Utils.DB().Exec(template, messageType, fromId, toId)
 	if err != nil {
-		log.Panicln("[SendMessageTo]服务器异常")
+		log.Println("[SendMessageTo] make a mistake", err)
 		return false
 	}
-	messageId, err := result.LastInsertId() ////
+	messageId, err := result.LastInsertId()
 	template = `Insert Into MessageInfo Set MessageId = ?,MessageContent = ?`
 	result, err = Utils.DB().Exec(template, messageId, message)
 	if err != nil {
-		log.Panicln("[SendMessageTo]服务器异常")
+		log.Println("[SendMessageTo] make a mistake", err)
 		return false
 	}
 	return true

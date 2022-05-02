@@ -162,3 +162,23 @@ func GetOrderInfo(orderId int64) (Utils.OrderInfo, error) {
 	}
 	return info, nil
 }
+
+func ReplyBargain(bargain Utils.ReplyBargain, companyId int64) bool {
+	template := `Update Bargain Set isPass = 1 , Price = ? ,ReplyTime = now() Where OrderId = ? And CompanyId = ?`
+	result, err := Utils.DB().Exec(template, bargain.Bargain, bargain.OrderId, companyId)
+	if err != nil {
+		return false
+	}
+	num, _ := result.RowsAffected()
+	return num == 1
+}
+
+func AskFroBargain(companyId, orderId int64) bool {
+	template := `Insert Into Bargain Set ReplyTime = now() Where OrderId = ? , CompanyId = ? limit 1`
+	result, err := Utils.DB().Exec(template, companyId, orderId)
+	if err != nil {
+		return false
+	}
+	num, _ := result.RowsAffected()
+	return num == 1
+}

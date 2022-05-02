@@ -17,3 +17,5 @@ export GIN_MODE=release
 gin.SetMode(gin.ReleaseMode)
 
 ```
+
+# 完大工，有需要的自己往后写 反正现在能用 
