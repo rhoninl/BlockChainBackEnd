@@ -34,7 +34,7 @@ func RecordOrder(info Utils.OrderInfo) (int64, bool, error) {
 		return 0, false, err
 	}
 	template := `Insert Into Orders Set ClientCompanyId = ?,StartDate = now() ,OrderStatus = ?`
-	rows, err := affair.Exec(template, info.ClientCompanyId, "新增")
+	rows, err := affair.Exec(template, info.ClientCompanyId, "议价")
 	if err != nil {
 		log.Println("[RecordOrder]Orders出错了", err)
 		affair.Rollback()

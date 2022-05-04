@@ -45,7 +45,7 @@ func Auth() gin.HandlerFunc {
 				}
 			}
 		}
-		c.JSON(http.StatusBadRequest, gin.H{"message": "请先登陆"})
+		c.JSON(http.StatusUnauthorized, nil)
 		c.Abort()
 	}
 }

@@ -114,12 +114,9 @@ func GetFriendsInfo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "当前公司与你尚未建交"})
 		return
 	}
-	info, exists, err := Model.Info(targetCompanyId)
+	info, err := Model.Info(targetCompanyId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
-		return
-	} else if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "目标企业不存在"})
 		return
 	}
 	c.JSON(http.StatusOK, info)
