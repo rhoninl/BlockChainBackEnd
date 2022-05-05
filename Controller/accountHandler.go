@@ -92,6 +92,7 @@ func Info(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器出错了"})
 		return
 	}
+	info.AddressId = 0
 	c.JSON(http.StatusOK, info)
 }
 
@@ -120,12 +121,13 @@ func GetAuth(c *gin.Context) {
 
 func EditInfo(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
-	var companyInfo Utils.CompanyInfo
-	c.Bind(&companyInfo)
-	companyInfo.CompanyId = companyId.(int64)
-	try1 := Model.TryUpdateCompany(companyInfo.CompanyBasicInfo)
-	addressId, try2 := Model.TryUpdateCompanyInfo(companyInfo)
-	try3 := Model.TryUpdateAddress(companyInfo.AddressInfo, companyInfo.CompanyId, addressId)
+	var info Utils.Info
+	c.Bind(&info)
+	info.CompanyBasicInfo.CompanyId = companyId.(int64)
+	info.CompanyInfo.CompanyId = info.CompanyBasicInfo.CompanyId
+	try1 := Model.TryUpdateCompany(info.CompanyBasicInfo)
+	try2 := Model.TryUpdateCompanyInfo(info.CompanyInfo)
+	try3 := Model.TryUpdateAddress(info.AddressInfo, companyId.(int64))
 	if try1 || try2 || try3 {
 		c.JSON(http.StatusCreated, gin.H{"message": "修改成功"})
 		return

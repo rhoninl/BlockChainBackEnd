@@ -1,13 +1,14 @@
 package Model
 
 import (
+	"database/sql"
+	"encoding/json"
 	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"main/Utils"
 	"reflect"
 	"strconv"
-	"time"
 )
 
 func Login(account Utils.Account) (Utils.Account, bool, error) {
@@ -26,66 +27,104 @@ func Login(account Utils.Account) (Utils.Account, bool, error) {
 	return info, true, nil
 }
 
-func Info(companyId int64) (Utils.CompanyInfo, bool, error) {
+func Info(companyId int64) (info Utils.Info, err error) {
+	info.CompanyInfo, err = getCompanyT(companyId)
+	if err != nil {
+		log.Println("[Info]->[getCompanyT] make a mistake ", err)
+		return
+	}
+	info.AddressInfo, err = getAddressT(info.CompanyInfo.AddressId)
+	if err != nil {
+		log.Println("[Info]->[getAddressT] make a mistake ", err)
+		return
+	}
+	info.CompanyBasicInfo, err = getCompanyBasicInfoT(companyId)
+	if err != nil {
+		log.Println("[Info]->[getAddressT] make a mistake ", err)
+		return
+	}
+	return info, nil
+}
+
+func getCompanyT(companyId int64) (Utils.CompanyInfo, error) {
 	var info Utils.CompanyInfo
-	template := `Select Phone,AddressId, Email From CompanyInfo Where CompanyId = ? limit 1`
-	rows, err := Utils.DB().Query(template, companyId)
-	if err != nil {
-		log.Println("[Info]数据库发生异常", err)
-		return info, false, err
+	result, err := Utils.RDB().HMGet("company_"+string(companyId), "phone", "addressId", "email").Result()
+	if err != nil || result[0] == nil || result[1] == nil || result[2] == nil {
+		template := `Select Phone,AddressId, Email From CompanyInfo Where CompanyId = ? limit 1`
+		rows, err := Utils.DB().Query(template, companyId)
+		if err != nil {
+			log.Println("[Info]数据库发生异常", err)
+			return info, err
+		}
+		defer rows.Close()
+		if !rows.Next() {
+			return info, nil
+		}
+		rows.Scan(&info.Phone, &info.AddressId, &info.Email)
+
+		tmp, _ := json.Marshal(info)
+		var data map[string]interface{}
+		json.Unmarshal(tmp, &data)
+		Utils.RDB().HMSet("company_"+string(companyId), data)
+
+	} else {
+		info.Phone = result[0].(string)
+		info.AddressId, err = strconv.ParseInt(result[1].(string), 10, 64)
+		info.Email = result[2].(string)
 	}
-	defer rows.Close()
-	if !rows.Next() {
-		return info, false, nil
-	}
-	var addressId int64
-	rows.Scan(&info.Phone, &addressId, &info.Email)
-	// 获取地址信息
-	addressInfo, err := QueryAddress(addressId)
-	if err != nil {
-		return info, false, err
-	}
-	info.Country = addressInfo.Country
-	info.City = addressInfo.City
-	info.Address = addressInfo.Address
-	//获取 基础信息
-	basicInfo, err := CompanyBasicInfo(companyId)
-	if err != nil {
-		return info, false, err
-	}
-	info.CompanyName = basicInfo.CompanyName
-	info.CompanyType = basicInfo.CompanyType
-	info.CompanyId = companyId
-	return info, true, nil
+	return info, nil
 }
 
-func QueryAddress(addressId int64) (Utils.AddressInfo, error) {
-	var addressInfo Utils.AddressInfo
-	template := `Select Country, City, Address From Address Where AddressId = ? Limit 1`
-	rows, err := Utils.DB().Query(template, addressId)
-	if err != nil {
-		log.Println("[QueryAddress]数据库发生异常", err)
-		return addressInfo, err
+func getAddressT(addressId int64) (info Utils.AddressInfo, err error) {
+	result, err := Utils.RDB().HMGet("address_"+string(addressId), "country", "city", "address").Result()
+	if err != nil || result[0] == nil || result[1] == nil || result[2] == nil {
+		template := `Select Country, City, Address From Address Where AddressId = ? Limit 1`
+		var rows *sql.Rows
+		rows, err = Utils.DB().Query(template, addressId)
+		if err != nil {
+			log.Println("[QueryAddress]数据库发生异常", err)
+			return
+		}
+		defer rows.Close()
+		rows.Next()
+		rows.Scan(&info.Country, &info.City, &info.Address)
+
+		var data map[string]interface{}
+		tmp, _ := json.Marshal(info)
+		json.Unmarshal(tmp, &data)
+		Utils.RDB().HMSet("address_"+string(addressId), data)
+
+	} else {
+		info.Country = result[0].(string)
+		info.City = result[1].(string)
+		info.Address = result[2].(string)
 	}
-	defer rows.Close()
-	rows.Next()
-	rows.Scan(&addressInfo.Country, &addressInfo.City, &addressInfo.Address)
-	return addressInfo, nil
+	return
 }
 
-func CompanyBasicInfo(companyId int64) (Utils.CompanyBasicInfo, error) {
-	var companyInfo Utils.CompanyBasicInfo
-	template := `Select CompanyName, CompanyType From Company Where CompanyId = ? Limit 1`
-	rows, err := Utils.DB().Query(template, companyId)
-	if err != nil {
-		log.Println("[GetCompanyById]数据库发生异常", err)
-		return companyInfo, err
+func getCompanyBasicInfoT(companyId int64) (info Utils.CompanyBasicInfo, err error) {
+	result, err := Utils.RDB().HMGet("company_"+string(companyId), "companyName", "companyType").Result()
+	if err != nil || result[0] == nil || result[1] == nil {
+		template := `Select CompanyName, CompanyType From Company Where CompanyId = ? Limit 1`
+		var rows *sql.Rows
+		rows, err = Utils.DB().Query(template, companyId)
+		if err != nil {
+			log.Println("[GetCompanyById]数据库发生异常", err)
+			return
+		}
+		defer rows.Close()
+		rows.Next()
+		rows.Scan(&info.CompanyName, &info.CompanyType)
+
+		var data map[string]interface{}
+		tmp, _ := json.Marshal(info)
+		json.Unmarshal(tmp, &data)
+		Utils.RDB().HMSet("company_"+string(companyId), data)
+	} else {
+		info.CompanyName = result[0].(string)
+		info.CompanyType = result[1].(string)
 	}
-	defer rows.Close()
-	rows.Next()
-	rows.Scan(&companyInfo.CompanyName, &companyInfo.CompanyType)
-	companyInfo.CompanyId = companyId
-	return companyInfo, nil
+	return
 }
 
 func RegisterInfo(info Utils.RegisterInfo) (bool, error) {
@@ -129,65 +168,60 @@ func CheckEmailUnique(email string) bool {
 }
 
 func TryUpdateCompany(info Utils.CompanyBasicInfo) bool {
-	template := `Select CompanyName, CompanyType From Company Where CompanyId = ? Limit 1`
-	rows, err := Utils.DB().Query(template, info.CompanyId)
+	oldInfo, err := getCompanyBasicInfoT(info.CompanyId)
 	if err != nil {
-		log.Println("[TryUpdateCompany]数据库异常", err)
 		return false
 	}
-	defer rows.Close()
-	if !rows.Next() {
-		return false
-	}
-	var oldInfo Utils.CompanyBasicInfo
-	rows.Scan(&oldInfo.CompanyName, &oldInfo.CompanyType)
 	oldInfo.CompanyId = info.CompanyId
-	fmt.Println(info, oldInfo)
 	if reflect.DeepEqual(oldInfo, info) {
 		return false
 	}
-	template = `Update Company Set CompanyName = ?,CompanyType = ? WHere CompanyId = ?`
+	template := `Update Company Set CompanyName = ?,CompanyType = ? WHere CompanyId = ?`
 	result, err := Utils.DB().Exec(template, info.CompanyName, info.CompanyType, info.CompanyId)
 	if err != nil {
 		log.Println("[TryUpdateCompany]数据库异常", err)
 		return false
 	}
-	Utils.RDB().Del(string(info.CompanyId))
+	Utils.RDB().HDel("company_"+string(info.CompanyId), "companyName", "companyType")
 	num, _ := result.RowsAffected()
 	return num == 1
 }
 
-//TryUpdateCompanyInfo return addressId,ok
-func TryUpdateCompanyInfo(info Utils.CompanyInfo) (int64, bool) {
-	template := `Select Phone, AddressId, Email From CompanyInfo Where CompanyId = ?`
-	rows, err := Utils.DB().Query(template, info.CompanyId)
+func TryUpdateCompanyInfo(info Utils.CompanyInfo) bool {
+	oldInfo, err := getCompanyT(info.CompanyId)
 	if err != nil {
-		log.Println("[TryUpdateCompany]数据库异常", err)
-		return 0, false
+		return false
 	}
-	defer rows.Close()
-	if !rows.Next() {
-		return 0, false
+	info.AddressId = oldInfo.AddressId
+	oldInfo.CompanyId = info.CompanyId
+	if reflect.DeepEqual(oldInfo, info) {
+		return false
 	}
-	var phone, email string
-	var addressId int64
-	rows.Scan(&phone, &addressId, &email)
-	fmt.Println(phone, addressId, email, info)
-	if info.Email == email && info.Phone == phone {
-		return 0, false
-	}
-	template = `Update CompanyInfo Set Phone = ?,Email = ? Where CompanyId = ?`
+	template := `Update CompanyInfo Set Phone = ?,Email = ? Where CompanyId = ?`
 	result, err := Utils.DB().Exec(template, info.Phone, info.Email, info.CompanyId)
 	if err != nil {
 		log.Println("[TryUpdateCompany]数据库异常", err)
-		return 0, false
+		return false
 	}
+	Utils.RDB().HDel("company_"+string(info.CompanyId), "phone", "email")
 	num, _ := result.RowsAffected()
-	return addressId, num == 1
+	return num == 1
 }
 
-func TryUpdateAddress(info Utils.AddressInfo, id int64, addressId int64) bool {
-	if addressId == 1 {
+func TryUpdateAddress(info Utils.AddressInfo, id int64) bool {
+	emm, err := getCompanyT(id)
+	if err != nil {
+		return false
+	}
+	oldInfo, err := getAddressT(emm.AddressId)
+	if err != nil {
+		return false
+	}
+	if reflect.DeepEqual(oldInfo, info) {
+		fmt.Println(false)
+		return false
+	}
+	if emm.AddressId == 1 {
 		template := `Insert Into Address Set Country=?,City=?,Address=?`
 		result, err := Utils.DB().Exec(template, info.Country, info.City, info.Address)
 		if err != nil {
@@ -197,30 +231,15 @@ func TryUpdateAddress(info Utils.AddressInfo, id int64, addressId int64) bool {
 		template = `Update CompanyInfo Set AddressId = ? Where CompanyId = ?`
 		rows, err := Utils.DB().Exec(template, aId, id)
 		num, _ := rows.RowsAffected()
+		Utils.RDB().HSet("company_"+string(id), "addressId", aId)
 		return num == 1
 	}
-	template := `Select Country, City, Address From Address Where AddressId = ?`
-	rows, err := Utils.DB().Query(template, addressId)
-	if err != nil {
-		log.Println("[TryUpdateAddress]数据库异常", err)
-		return false
-	}
-	defer rows.Close()
-	if !rows.Next() {
-		return false
-	}
-	var oldInfo Utils.AddressInfo
-	rows.Scan(&oldInfo.Country, &oldInfo.City, &oldInfo.Address)
-	fmt.Println(oldInfo, info)
-	if reflect.DeepEqual(oldInfo, info) {
-		fmt.Println(false)
-		return false
-	}
-	template = `Update Address Set Country = ?,City = ?,Address = ? Where AddressId = ?`
-	result, err := Utils.DB().Exec(template, info.Country, info.City, info.Address, addressId)
+	template := `Update Address Set Country = ?,City = ?,Address = ? Where AddressId = ?`
+	result, err := Utils.DB().Exec(template, info.Country, info.City, info.Address, emm.AddressId)
 	if err != nil {
 		return false
 	}
+	Utils.RDB().HDel("address_"+string(id), "country", "city", "address")
 	num, _ := result.RowsAffected()
 	return num == 1
 }
@@ -275,14 +294,6 @@ func ChangePassword(account interface{}, password string) bool {
 
 //GetCompanyBasicInfo 通过Id获取企业的类型以及名称 (name,type)
 func GetCompanyBasicInfo(companyId int64) (string, string) {
-	aCompanyId := strconv.FormatInt(companyId, 10)
-	companyName, err := Utils.RDB().Get(aCompanyId + "#Companyname").Result()
-	companyType, err := Utils.RDB().Get(aCompanyId + "#Companytype").Result()
-	if err != nil { //Redis中没有找到则进行查找
-		basicInfo, _ := CompanyBasicInfo(companyId)
-		Utils.RDB().Set(aCompanyId+"#Comanytype", basicInfo.CompanyType, time.Minute*5)
-		Utils.RDB().Set(aCompanyId+"#Companyname", basicInfo.CompanyName, time.Minute*5)
-		return basicInfo.CompanyName, basicInfo.CompanyType
-	}
-	return companyName, companyType
+	info, _ := getCompanyBasicInfoT(companyId)
+	return info.CompanyName, info.CompanyType
 }

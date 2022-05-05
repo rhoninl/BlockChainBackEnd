@@ -97,8 +97,8 @@ func DeleteFriend(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
-	info, _ = Model.CompanyBasicInfo(info.CompanyId)
-	go Model.SendMessageTo(0, "很抱歉通知您，您的好友<"+info.CompanyName+">( id: "+strconv.FormatInt(info.CompanyId, 10)+" )把你给删了", info.CompanyId, 0)
+	companyName, _ := Model.GetCompanyBasicInfo(thisCompanyId.(int64))
+	go Model.SendMessageTo(0, "很抱歉通知您，您的好友<"+companyName+">( id: "+strconv.FormatInt(thisCompanyId.(int64), 10)+" )把你给删了", info.CompanyId, 0)
 	c.JSON(http.StatusCreated, nil)
 }
 

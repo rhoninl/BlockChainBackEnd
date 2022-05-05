@@ -5,13 +5,17 @@ type Account struct {
 	Password  string `json:"password"`
 	CompanyId int64  `json:"companyId"`
 }
-
-type CompanyInfo struct {
-	//CompanyId string `json:"companyId"`
-	Phone string `json:"phone"`
-	Email string `json:"email"`
+type Info struct {
+	CompanyInfo
 	AddressInfo
 	CompanyBasicInfo
+}
+
+type CompanyInfo struct {
+	CompanyId int64  `json:"-"`
+	AddressId int64  `json:"addressId,omitempty"`
+	Phone     string `json:"phone"`
+	Email     string `json:"email"`
 }
 
 type AddressInfo struct {
