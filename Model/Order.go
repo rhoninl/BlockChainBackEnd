@@ -163,6 +163,19 @@ func GetOrderInfo(orderId int64) (Utils.OrderInfo, error) {
 	return info, nil
 }
 
+func CheckOrderCanBargain(orderId int64) bool {
+	template := `Select OrderStatus  From Orders Where OrderId = ? limit 1`
+	var status string
+	rows, err := Utils.DB().Query(template, orderId)
+	if err != nil || rows.Next() {
+		log.Println("[CheckOrderCanBargain] make a mistake ", err)
+		return false
+	}
+	defer rows.Close()
+	rows.Scan(&status)
+	return status == "议价"
+}
+
 func ReplyBargain(bargain Utils.ReplyBargain, companyId int64) bool {
 	template := `Update Bargain Set isPass = 1 , Price = ? ,ReplyTime = now() Where OrderId = ? And CompanyId = ?`
 	result, err := Utils.DB().Exec(template, bargain.Bargain, bargain.OrderId, companyId)

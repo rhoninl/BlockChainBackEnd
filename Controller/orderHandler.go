@@ -82,7 +82,14 @@ func ReplyBargain(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
 	var info Utils.ReplyBargain
 	c.Bind(&info)
-	Model.ReplyBargain(info, companyId.(int64))
+	if !Model.CheckOrderCanBargain(info.OrderId) {
+		c.JSON(http.StatusForbidden, gin.H{"message": "订单状态不对"})
+		return
+	}
+	if !Model.ReplyBargain(info, companyId.(int64)) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "回复失败"})
+		return
+	}
 	go Model.SendMessageTo(4, info.Bargain, 2, companyId.(int64))
 	c.JSON(http.StatusCreated, nil)
 }
