@@ -115,7 +115,7 @@ type MessageList struct {
 
 type GetAuth struct {
 	Email string `json:"email"`
-	Tag   string `json:"tag"`
+	Tag   int    `json:"tag"`
 }
 
 type ReplyFriend struct {

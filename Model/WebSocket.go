@@ -5,7 +5,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"log"
-	"runtime"
 	"sync"
 	"time"
 )
@@ -78,24 +77,26 @@ func (c *Client) HeartBeat() {
 	for {
 		select {
 		case <-time.After(time.Minute * 5):
-			for k, v := range c.clients {
-				wg.Add(1)
-				ch <- struct{}{} //写入信息到channel用于计数
-				go func(id int64, conn *websocket.Conn) {
-					defer func() {
-						wg.Done()
-						<-ch
-					}()
-					err := conn.WriteJSON(gin.H{"OnlineNum": c.clientNum, "type": 0})
-					if err != nil {
-						c.UnRegister(id)
-					}
-				}(k, v)
+			if len(c.clients) != 0 {
+				for k, v := range c.clients {
+					wg.Add(1)
+					ch <- struct{}{} //写入信息到channel用于计数
+					go func(id int64, conn *websocket.Conn) {
+						defer func() {
+							wg.Done()
+							<-ch
+						}()
+						err := conn.WriteJSON(gin.H{"OnlineNum": c.clientNum, "type": 0})
+						if err != nil {
+							c.UnRegister(id)
+						}
+					}(k, v)
+				}
+			} else {
+				log.Println("偷懒了一次")
 			}
 		}
 		wg.Wait() //等待所有协程结束
-		runtime.GC()
-		log.Println("Now GoRuntime Num is ", runtime.NumGoroutine())
 	}
 	close(ch)
 }

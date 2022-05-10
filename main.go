@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"log"
 	"main/Controller"
 	"main/MiddleWare"
+	"net/http"
+	"runtime"
 )
 
 const f = `
@@ -40,8 +43,9 @@ func main() {
 	config.AllowOrigins = []string{"http://localhost:8080", "http://localhost:8081"}
 	config.AllowCredentials = true
 	router.Use(cors.New(config))
-	router.GET("/", func(c *gin.Context) {
-		c.Writer.WriteString("看nmlgcb")
+	router.GET("/getNum", func(c *gin.Context) {
+		log.Println(runtime.NumGoroutine())
+		c.JSON(http.StatusOK, nil)
 	})
 	homePage := router.Group("/homePage")
 	{

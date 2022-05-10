@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 	"main/Model"
 	"main/Utils"
 	"net/http"
@@ -98,24 +99,29 @@ func Info(c *gin.Context) {
 
 func GetAuth(c *gin.Context) {
 	var info Utils.GetAuth
-	c.Bind(&info)
-	if info.Email == "" {
+	err := c.Bind(&info)
+	if err != nil || info.Email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱无效"})
 		return
 	}
-	if info.Tag != "" && !Model.CheckEmailUnique(info.Email) {
+	if info.Tag != 0 && !Model.CheckEmailUnique(info.Email) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "邮箱已使用"})
+		log.Println(info)
 		return
 	}
 	var codeInfo Utils.AuthCode
 	codeInfo.Code = Utils.GenVerCode()
+	codeInfo.ToEmail = info.Email
+	err = Utils.AuthCodeRegister(codeInfo)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "验证码发送失败"})
+		return
+	}
 	message := `<html><body>您的验证码为<h3>` + codeInfo.Code + `</h3><br/>验证码有效期为1小时，请在1小时内完成验证<br/>如果不是您本人操作，请忽略本条邮件</body></html>`
 	if err := Utils.SendMessage(message, info.Email); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
-	codeInfo.ToEmail = info.Email
-	Utils.AuthCodeRegister(codeInfo)
 	c.JSON(http.StatusCreated, nil)
 }
 
