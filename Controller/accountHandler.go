@@ -48,9 +48,18 @@ func Login(c *gin.Context) {
 
 func LogOut(c *gin.Context) {
 	companyId, _ := c.Get("companyId")
-
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "token",
+		Value:    "Bye",
+		Path:     "/",
+		Domain:   "",
+		MaxAge:   -1,
+		Secure:   true,
+		SameSite: 4,
+	})
 	go Model.UseClient().UnRegister(companyId.(int64))
 	fmt.Println(companyId, "is LogOut")
+	c.JSON(http.StatusOK, nil)
 }
 
 func Register(c *gin.Context) {

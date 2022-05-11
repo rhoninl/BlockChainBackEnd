@@ -39,12 +39,23 @@ func GetMessageInfo(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "信息的接受帐号与当前帐号不匹配"})
 		return
 	}
-	message, err := Model.GetMessageInfo(fMessageId)
-	if err != nil {
+	message, err1 := Model.GetMessageInfo(fMessageId)
+	info, err2 := Model.GetMessageBasicInfo(fMessageId)
+	if err1 != nil || err2 != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
-	c.JSON(http.StatusOK, message)
+	if info.MessageType == 3 {
+		orderId, _ := strconv.ParseInt(message.Context, 10, 64)
+		orderInfo, _ := Model.GetOrderInfo(orderId)
+		data := gin.H{
+			"data":   orderInfo,
+			"status": Model.CheckOrderStatus(orderId, "议价"),
+		}
+		c.JSON(http.StatusOK, data)
+	} else {
+		c.JSON(http.StatusOK, message)
+	}
 }
 
 func DeleteMessage(c *gin.Context) {

@@ -248,3 +248,7 @@ func CheckOrderStatus(orderId int64, status string) bool {
 	rows.Scan(&curStatus)
 	return curStatus == status
 }
+
+func CloseAllBargainRequest(orderId int64) {
+
+}
