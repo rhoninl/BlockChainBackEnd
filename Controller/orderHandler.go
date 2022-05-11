@@ -48,7 +48,7 @@ func AskForPrice(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "当前订单未处于议价状态"})
 		return
 	}
-	if !Model.CheckBargainSent(info.OrderId, info.TargetCompanyId) {
+	if Model.CheckBargainSent(info.OrderId, info.TargetCompanyId) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "请勿重复发送询价"})
 		return
 	}
