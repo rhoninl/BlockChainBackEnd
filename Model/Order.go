@@ -11,8 +11,8 @@ import (
 func GetAllOrder(companyId int64) ([]Utils.Order, error) {
 	var orderInfos []Utils.Order
 	var orderInfo Utils.Order
-	var landTransportCompanyId, seaTransportCompanyId int64
-	template := `Select OrderId, StartDate, LandTransportCompanyId, SeaTransportCompanyId, OrderStatus From Orders Where ClientCompanyId = ?`
+	var seaTransportCompanyId int64
+	template := `Select OrderId, StartDate,SeaTransportCompanyId, OrderStatus From Orders Where ClientCompanyId = ?`
 	rows, err := Utils.DB().Query(template, companyId)
 	if err != nil {
 		log.Println("[GetAllOrder]数据库异常", err)
@@ -20,8 +20,7 @@ func GetAllOrder(companyId int64) ([]Utils.Order, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		rows.Scan(&orderInfo.OrderId, &orderInfo.StartDate, &landTransportCompanyId, &seaTransportCompanyId, &orderInfo.Status)
-		orderInfo.LandTransCompanyName, _ = GetCompanyBasicInfo(landTransportCompanyId)
+		rows.Scan(&orderInfo.OrderId, &orderInfo.StartDate, &seaTransportCompanyId, &orderInfo.Status)
 		orderInfo.SeaTransCompanyName, _ = GetCompanyBasicInfo(seaTransportCompanyId)
 		orderInfo.ClientCompanyName, _ = GetCompanyBasicInfo(companyId)
 		orderInfos = append(orderInfos, orderInfo)
@@ -200,8 +199,8 @@ func AskFroBargain(companyId, orderId int64) bool {
 }
 
 func UpdateOrderAgent(info Utils.OrderCompany) bool {
-	template := `Update Orders Set LandTransportCompanyId = ? , SeaTransportCompanyId = ? , OrderStatus = '配置中' Where OrderId = ? limit 1`
-	result, err := Utils.DB().Exec(template, info.LandCompanyId, info.SeaCompanyId, info.OrderId)
+	template := `Update Orders Set SeaTransportCompanyId = ? , OrderStatus = '配置中' Where OrderId = ? limit 1`
+	result, err := Utils.DB().Exec(template, info.SeaCompanyId, info.OrderId)
 	if err != nil {
 		log.Println("[UpdateOrderAgent] Make a mistake ", err)
 		return false
@@ -255,7 +254,5 @@ func NoticeChoose(info Utils.OrderCompany, companyId int64) {
 	text := `恭喜您，` + companyName + ` ( id :` + strconv.FormatInt(companyId, 10) +
 		` ) 对于您对订单 ( id :` + strconv.FormatInt(info.OrderId, 10) + ` )使用了您的报价`
 	text1 := text + strconv.FormatInt(info.SeaBargain, 10)
-	go SendMessageTo(0, text1, info.SeaCompanyId, 0)
-	text = text + strconv.FormatInt(info.LandBargain, 10)
-	SendMessageTo(0, text, info.LandCompanyId, 0)
+	SendMessageTo(0, text1, info.SeaCompanyId, 0)
 }

@@ -59,7 +59,6 @@ Create Table Orders
     OrderId                int auto_increment primary key,
     ClientCompanyId        int         NOT NULL,
     StartDate              int,
-    LandTransportCompanyId int         Not Null default 0,
     SeaTransportCompanyId  int         Not Null default 0,
     OrderStatus            varchar(30) Not Null
 ) charset = utf8mb4;

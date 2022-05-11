@@ -2,7 +2,6 @@ package Controller
 
 import (
 	"github.com/gin-gonic/gin"
-	"log"
 	"main/Model"
 	"main/Utils"
 	"net/http"
@@ -144,14 +143,12 @@ func SubmitCompanyChoose(c *gin.Context) {
 		c.JSON(http.StatusNotAcceptable, gin.H{"message": "当前帐号与该订单所属帐号不符"})
 		return
 	}
-	if !Model.CheckCompanyFriend(companyId, form.SeaCompanyId) || !Model.CheckCompanyFriend(companyId, form.LandCompanyId) {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "当前帐号与陆代公司或者船代公司不是好友"})
+	if !Model.CheckCompanyFriend(companyId, form.SeaCompanyId) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "当前帐号船代公司不是好友"})
 		return
 	}
-	_, landType := Model.GetCompanyBasicInfo(form.LandCompanyId)
 	_, seaType := Model.GetCompanyBasicInfo(form.SeaCompanyId)
-	if landType != "陆运公司" || seaType != "船代" {
-		log.Println(landType, seaType)
+	if seaType != "船代" {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "未选择船代或者陆代"})
 		return
 	}

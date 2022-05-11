@@ -11,9 +11,9 @@ go 1.18
 ```
 生产环境需要修改
 在命令行设置
-export GIN_MODE=release
+> export GIN_MODE=release
+
 同时在程序中设置ReleaseMode即可即可
 ```
 gin.SetMode(gin.ReleaseMode)
-
 ```

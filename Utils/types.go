@@ -37,12 +37,11 @@ type CompanyBasicInfo struct {
 }
 
 type Order struct {
-	OrderId              int64  `json:"orderId"`
-	ClientCompanyName    string `json:"clientCompanyName"`
-	StartDate            string `json:"startDate"`
-	LandTransCompanyName string `json:"landTransCompanyName"`
-	SeaTransCompanyName  string `json:"seaTransCompanyName"`
-	Status               string `json:"status"`
+	OrderId             int64  `json:"orderId"`
+	ClientCompanyName   string `json:"clientCompanyName"`
+	StartDate           string `json:"startDate"`
+	SeaTransCompanyName string `json:"seaTransCompanyName"`
+	Status              string `json:"status"`
 }
 
 type CompanyList struct {
@@ -168,9 +167,7 @@ type ReplyBargain struct {
 }
 
 type OrderCompany struct {
-	OrderId       int64 `json:"orderId"`
-	SeaCompanyId  int64 `json:"seaCompanyId"`
-	SeaBargain    int64 `json:"seaBargain"`
-	LandCompanyId int64 `json:"landCompanyId"`
-	LandBargain   int64 `json:"landBargain"`
+	OrderId      int64 `json:"orderId"`
+	SeaCompanyId int64 `json:"seaCompanyId"`
+	SeaBargain   int64 `json:"seaBargain"`
 }
