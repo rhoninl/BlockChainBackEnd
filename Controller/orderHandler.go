@@ -159,5 +159,6 @@ func SubmitCompanyChoose(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
 		return
 	}
+	go Model.NoticeChoose(form, companyId)
 	c.JSON(http.StatusCreated, nil)
 }

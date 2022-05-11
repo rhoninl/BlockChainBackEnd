@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"main/Utils"
+	"strconv"
 	"sync"
 )
 
@@ -45,7 +46,7 @@ func RecordOrder(info Utils.OrderInfo) (int64, bool, error) {
 	template = `Insert Into Cargo Set CargoName = ? , CargoModel = ? , CargoSize = ? , CargoNum = ? , Category = ? , Weight = ? `
 	for _, item := range info.Cargos {
 		wg.Add(1)
-		rows, err := affair.Exec(template, item.CargoName, item.CargoModel, item.CargoSize, item.CargoNum, item.Category, item.CargoWeight)
+		rows, err = affair.Exec(template, item.CargoName, item.CargoModel, item.CargoSize, item.CargoNum, item.Category, item.CargoWeight)
 		if err != nil {
 			log.Println("[RecordOrder]Cargo出错了", err)
 			affair.Rollback()
@@ -53,7 +54,7 @@ func RecordOrder(info Utils.OrderInfo) (int64, bool, error) {
 		}
 		cargoId, _ := rows.LastInsertId()
 		go func(cargoId int64) {
-			template := `Insert Into Order_Cargo Set OrderId = ?,CargoId = ?`
+			template = `Insert Into Order_Cargo Set OrderId = ?,CargoId = ?`
 			affair.Exec(template, info.OrderId, cargoId)
 			wg.Done()
 		}(cargoId)
@@ -199,7 +200,7 @@ func AskFroBargain(companyId, orderId int64) bool {
 }
 
 func UpdateOrderAgent(info Utils.OrderCompany) bool {
-	template := `Update Orders Set LandTransportCompanyId = ? , SeaTransportCompanyId = ? , OrderStatus = '运输' Where OrderId = ? limit 1`
+	template := `Update Orders Set LandTransportCompanyId = ? , SeaTransportCompanyId = ? , OrderStatus = '配置中' Where OrderId = ? limit 1`
 	result, err := Utils.DB().Exec(template, info.LandCompanyId, info.SeaCompanyId, info.OrderId)
 	if err != nil {
 		log.Println("[UpdateOrderAgent] Make a mistake ", err)
@@ -249,6 +250,12 @@ func CheckOrderStatus(orderId int64, status string) bool {
 	return curStatus == status
 }
 
-func CloseAllBargainRequest(orderId int64) {
-
+func NoticeChoose(info Utils.OrderCompany, companyId int64) {
+	companyName, _ := GetCompanyBasicInfo(companyId)
+	text := `恭喜您，` + companyName + ` ( id :` + strconv.FormatInt(companyId, 10) +
+		` ) 对于您对订单 ( id :` + strconv.FormatInt(info.OrderId, 10) + ` )使用了您的报价`
+	text1 := text + strconv.FormatInt(info.SeaBargain, 10)
+	go SendMessageTo(0, text1, info.SeaCompanyId, 0)
+	text = text + strconv.FormatInt(info.LandBargain, 10)
+	SendMessageTo(0, text, info.LandCompanyId, 0)
 }

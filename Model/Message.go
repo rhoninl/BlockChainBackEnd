@@ -18,6 +18,8 @@ func SendMessageTo(messageType int, message interface{}, toId int64, fromId int6
 		text = `您有一条好友消息`
 	case 3:
 		text = `您有一条新报价请求`
+	case 4:
+		text = `您的订单得到报价`
 	default:
 		text = `出错了，请联系工作人员`
 	}

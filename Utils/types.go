@@ -170,5 +170,7 @@ type ReplyBargain struct {
 type OrderCompany struct {
 	OrderId       int64 `json:"orderId"`
 	SeaCompanyId  int64 `json:"seaCompanyId"`
+	SeaBargain    int64 `json:"seaBargain"`
 	LandCompanyId int64 `json:"landCompanyId"`
+	LandBargain   int64 `json:"landBargain"`
 }

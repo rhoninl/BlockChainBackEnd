@@ -6,7 +6,7 @@ import (
 )
 
 func GetJointVenture(companyId int64) ([]Utils.CompanyList, error) {
-	template := `Select CompanyId, TargetCompanyId From ( Select * From Relation Where isDelete = 0) as A Where CompanyId = ? Or TargetCompanyId = ?`
+	template := `Select DISTINCT CompanyId, TargetCompanyId From ( Select * From Relation Where isDelete = 0) as A Where CompanyId = ? Or TargetCompanyId = ?`
 	rows, err := Utils.DB().Query(template, companyId, companyId)
 	if err != nil {
 		log.Println("[GetJointVenture]数据库异常", err)
