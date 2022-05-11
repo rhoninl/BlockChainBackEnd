@@ -234,12 +234,17 @@ func CheckBargainSent(orderId, companyId int64) bool {
 }
 
 func CheckOrderStatus(orderId int64, status string) bool {
-	template := `Select StartDate From Orders Where OrderId = ? And OrderStatus = ?`
-	rows, err := Utils.DB().Query(template, orderId, status)
+	template := `Select OrderStatus From Orders Where OrderId = ?`
+	rows, err := Utils.DB().Query(template, orderId)
 	if err != nil {
 		log.Println("[CheckOrderStatus] make a mistake ", err)
 		return false
 	}
 	defer rows.Close()
-	return rows.Next()
+	if !rows.Next() {
+		return false
+	}
+	var curStatus string
+	rows.Scan(&curStatus)
+	return curStatus == status
 }
