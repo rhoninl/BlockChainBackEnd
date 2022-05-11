@@ -149,7 +149,7 @@ func SubmitCompanyChoose(c *gin.Context) {
 	}
 	_, seaType := Model.GetCompanyBasicInfo(form.SeaCompanyId)
 	if seaType != "船代" {
-		c.JSON(http.StatusBadRequest, gin.H{"message": "未选择船代或者陆代"})
+		c.JSON(http.StatusBadRequest, gin.H{"message": "未选择船代公司"})
 		return
 	}
 	if !Model.UpdateOrderAgent(form) {
