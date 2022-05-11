@@ -86,6 +86,7 @@ func main() {
 		order.GET("/getAllBargain", Controller.GetAllBargain)
 		order.POST("/replyBargain", Controller.ReplyBargain)
 		order.GET("/getOrderInfo", Controller.GetOrderInfo)
+		order.POST("/chooseAgent", Controller.SubmitCompanyChoose)
 	}
 	message := router.Group("/message", MiddleWare.Auth())
 	{

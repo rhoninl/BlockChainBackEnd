@@ -2,6 +2,7 @@ package Controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"log"
 	"main/Model"
 	"main/Utils"
 	"net/http"
@@ -43,6 +44,10 @@ func AskForPrice(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "该订单不属于当前公司"})
 		return
 	}
+	if !Model.CheckBargainSent(info.OrderId, info.TargetCompanyId) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "请勿重复发送询价"})
+		return
+	}
 	if !Model.CheckCompanyFriend(companyId.(int64), info.TargetCompanyId) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "尚未与目标公司建交"})
 		return
@@ -51,7 +56,10 @@ func AskForPrice(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "消息发送失败"})
 		return
 	}
-	Model.AskFroBargain(companyId.(int64), info.OrderId)
+	if !Model.AskFroBargain(info.TargetCompanyId, info.OrderId) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "发送失败"})
+		return
+	}
 	c.JSON(http.StatusCreated, nil)
 }
 
@@ -90,7 +98,21 @@ func ReplyBargain(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "回复失败"})
 		return
 	}
-	go Model.SendMessageTo(4, info.Bargain, 2, companyId.(int64))
+	clientCompanyId, err := Model.GetOrderClientId(info.OrderId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "订单信息获取失败"})
+		return
+	}
+	fromCompanyName, _ := Model.GetCompanyBasicInfo(companyId.(int64))
+	var str string
+	if info.IsPass {
+		str = `您的订单(id:` + strconv.FormatInt(info.OrderId, 10) + `)得到了新的报价
+	` + fromCompanyName + `(id : ` + strconv.FormatInt(companyId.(int64), 10) + `)` + `向您报价` + strconv.FormatInt(info.Bargain, 10) +
+			`元`
+	} else {
+		str = `您的订单(id:` + strconv.FormatInt(info.OrderId, 10) + `)的报价请求被` + fromCompanyName + `(id : ` + strconv.FormatInt(companyId.(int64), 10) + `)拒绝`
+	}
+	go Model.SendMessageTo(4, str, clientCompanyId, 0)
 	c.JSON(http.StatusCreated, nil)
 }
 
@@ -107,4 +129,31 @@ func GetOrderInfo(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, info)
+}
+
+func SubmitCompanyChoose(c *gin.Context) {
+	iCompanyId, _ := c.Get("companyId")
+	companyId := iCompanyId.(int64)
+	var form Utils.OrderCompany
+	c.Bind(&form)
+	if !Model.CheckOrderCompany(form.OrderId, companyId) {
+		c.JSON(http.StatusNotAcceptable, gin.H{"message": "当前帐号与该订单所属帐号不符"})
+		return
+	}
+	if !Model.CheckCompanyFriend(companyId, form.SeaCompanyId) || !Model.CheckCompanyFriend(companyId, form.LandCompanyId) {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "当前帐号与陆代公司或者船代公司不是好友"})
+		return
+	}
+	_, landType := Model.GetCompanyBasicInfo(form.LandCompanyId)
+	_, seaType := Model.GetCompanyBasicInfo(form.SeaCompanyId)
+	if landType != "陆代" || seaType != "船代" {
+		log.Println(landType, seaType)
+		c.JSON(http.StatusBadRequest, gin.H{"message": "未选择船代或者陆代"})
+		return
+	}
+	if !Model.UpdateOrderAgent(form) {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "服务器异常"})
+		return
+	}
+	c.JSON(http.StatusCreated, nil)
 }

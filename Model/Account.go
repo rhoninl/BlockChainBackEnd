@@ -124,6 +124,7 @@ func getCompanyBasicInfoT(companyId int64) (info Utils.CompanyBasicInfo, err err
 		info.CompanyName = result[0].(string)
 		info.CompanyType = result[1].(string)
 	}
+	info.CompanyId = companyId
 	return
 }
 
@@ -168,6 +169,7 @@ func CheckEmailUnique(email string) bool {
 }
 
 func TryUpdateCompany(info Utils.CompanyBasicInfo) bool {
+
 	oldInfo, err := getCompanyBasicInfoT(info.CompanyId)
 	if err != nil {
 		return false

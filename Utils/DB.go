@@ -27,7 +27,7 @@ func init() {
 		Addr: "101.42.99.73:6379",
 		//Addr:     "localhost:6379",
 		Password: "",
-		DB:       2,
+		DB:       3,
 	})
 	_, err = rdb.Ping().Result()
 	if err != nil {

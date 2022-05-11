@@ -167,7 +167,7 @@ func CheckOrderCanBargain(orderId int64) bool {
 	template := `Select OrderStatus  From Orders Where OrderId = ? limit 1`
 	var status string
 	rows, err := Utils.DB().Query(template, orderId)
-	if err != nil || rows.Next() {
+	if err != nil || !rows.Next() {
 		log.Println("[CheckOrderCanBargain] make a mistake ", err)
 		return false
 	}
@@ -180,18 +180,53 @@ func ReplyBargain(bargain Utils.ReplyBargain, companyId int64) bool {
 	template := `Update Bargain Set isPass = 1 , Price = ? ,ReplyTime = now() Where OrderId = ? And CompanyId = ?`
 	result, err := Utils.DB().Exec(template, bargain.Bargain, bargain.OrderId, companyId)
 	if err != nil {
+		log.Println("[ReplyBargain]", err)
+		return false
+	}
+	num, err := result.RowsAffected()
+	return num == 1
+}
+
+func AskFroBargain(companyId, orderId int64) bool {
+	template := `Insert Into Bargain Set ReplyTime = now() , OrderId = ? , CompanyId = ?`
+	result, err := Utils.DB().Exec(template, orderId, companyId)
+	if err != nil {
+		log.Println("[AskForBargain] make a mistake ", err)
 		return false
 	}
 	num, _ := result.RowsAffected()
 	return num == 1
 }
 
-func AskFroBargain(companyId, orderId int64) bool {
-	template := `Insert Into Bargain Set ReplyTime = now() Where OrderId = ? , CompanyId = ? limit 1`
-	result, err := Utils.DB().Exec(template, companyId, orderId)
+func UpdateOrderAgent(info Utils.OrderCompany) bool {
+	template := `Update Orders Set LandTransportCompanyId = ? , SeaTransportCompanyId = ? , OrderStatus = '运输' Where OrderId = ? limit 1`
+	result, err := Utils.DB().Exec(template, info.LandCompanyId, info.SeaCompanyId, info.OrderId)
 	if err != nil {
+		log.Println("[UpdateOrderAgent] Make a mistake ", err)
 		return false
 	}
-	num, _ := result.RowsAffected()
-	return num == 1
+	line, _ := result.RowsAffected()
+	return line == 1
+}
+
+func GetOrderClientId(orderId int64) (int64, error) {
+	template := `Select ClientCompanyId From Orders Where OrderId = ?`
+	rows, err := Utils.DB().Query(template, orderId)
+	if err != nil || !rows.Next() {
+		log.Println("[GetOrderClientId] make a mistake ", err)
+		return -1, err
+	}
+	var companyId int64
+	rows.Scan(&companyId)
+	return companyId, nil
+}
+
+func CheckBargainSent(orderId, companyId int64) bool {
+	template := `Select isPass From Bargain Where OrderId = ? And CompanyId = ?`
+	rows, err := Utils.DB().Query(template, orderId, companyId)
+	if err != nil {
+		log.Println("[CheckBargainSent] make a mistake ", err)
+		return false
+	}
+	return rows.Next()
 }
