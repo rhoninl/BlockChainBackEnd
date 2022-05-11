@@ -216,6 +216,7 @@ func GetOrderClientId(orderId int64) (int64, error) {
 		log.Println("[GetOrderClientId] make a mistake ", err)
 		return -1, err
 	}
+	defer rows.Close()
 	var companyId int64
 	rows.Scan(&companyId)
 	return companyId, nil
@@ -228,5 +229,17 @@ func CheckBargainSent(orderId, companyId int64) bool {
 		log.Println("[CheckBargainSent] make a mistake ", err)
 		return false
 	}
+	defer rows.Close()
+	return rows.Next()
+}
+
+func CheckOrderStatus(orderId int64, status string) bool {
+	template := `Select StartDate From Orders Where OrderId = ? And OrderStatus = ?`
+	rows, err := Utils.DB().Query(template, orderId, status)
+	if err != nil {
+		log.Println("[CheckOrderStatus] make a mistake ", err)
+		return false
+	}
+	defer rows.Close()
 	return rows.Next()
 }

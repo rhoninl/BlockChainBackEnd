@@ -44,6 +44,10 @@ func AskForPrice(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "该订单不属于当前公司"})
 		return
 	}
+	if !Model.CheckOrderStatus(info.OrderId, "议价") {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "当前订单未处于议价状态"})
+		return
+	}
 	if !Model.CheckBargainSent(info.OrderId, info.TargetCompanyId) {
 		c.JSON(http.StatusBadRequest, gin.H{"message": "请勿重复发送询价"})
 		return
@@ -146,7 +150,7 @@ func SubmitCompanyChoose(c *gin.Context) {
 	}
 	_, landType := Model.GetCompanyBasicInfo(form.LandCompanyId)
 	_, seaType := Model.GetCompanyBasicInfo(form.SeaCompanyId)
-	if landType != "陆代" || seaType != "船代" {
+	if landType != "陆运公司" || seaType != "船代" {
 		log.Println(landType, seaType)
 		c.JSON(http.StatusBadRequest, gin.H{"message": "未选择船代或者陆代"})
 		return

@@ -25,7 +25,7 @@ func init() {
 	}
 	myClient.clientGroup["未选择"] = make(map[int64]struct{})
 	myClient.clientGroup["船代"] = make(map[int64]struct{})
-	myClient.clientGroup["货代"] = make(map[int64]struct{})
+	myClient.clientGroup["通天代"] = make(map[int64]struct{})
 	myClient.clientGroup["陆运公司"] = make(map[int64]struct{})
 	go myClient.HeartBeat()
 	fmt.Println("[Websocket]init Success!")
