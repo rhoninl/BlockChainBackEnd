@@ -53,7 +53,7 @@ func RecordOrder(info Utils.OrderInfo) (int64, bool, error) {
 		}
 		cargoId, _ := rows.LastInsertId()
 		go func(cargoId int64) {
-			template = `Insert Into Order_Cargo Set OrderId = ?,CargoId = ?`
+			template := `Insert Into Order_Cargo Set OrderId = ?,CargoId = ?`
 			affair.Exec(template, info.OrderId, cargoId)
 			wg.Done()
 		}(cargoId)
@@ -63,7 +63,6 @@ func RecordOrder(info Utils.OrderInfo) (int64, bool, error) {
 	sendAddressId, _ := rows.LastInsertId()
 	rows, err = affair.Exec(template, info.ReceiveAddress.Country, info.ReceiveAddress.City, info.ReceiveAddress.Address)
 	receiveAddressId, _ := rows.LastInsertId()
-
 	template = `Insert Into OrderInfo Set OrderId = ?,StartAddressId = ? ,EndAddressId = ? ,Phone= ?,Email = ?,Fax = ? , HopeReachDate = ? , INCOTERMS = ? , UnStackable = ? , Perishable =?,Dangerous = ? , Clearance = ? , Other = ?, deliveryDate = ?`
 	_, err = affair.Exec(template, info.OrderId, sendAddressId, receiveAddressId, info.Phone, info.Email, info.Fax, info.HopeReachDate, info.Incoterms, info.UnStackable, info.Perishable, info.Dangerous, info.Clearance, info.Other, info.DeliveryDate)
 	wg.Wait()
